@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url';
 import { build, type Plugin } from 'vite';
 
 export const kitRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+// 시험이 임시 폴더를 .runtime/ 아래에 만든다 — 새로 받은 체크아웃(CI)에는 없으니 먼저 만든다
+mkdirSync(join(kitRoot, '.runtime', 'tmp'), { recursive: true });
 
 export const metadata = {
   title: 'OpenCAD 시험 뷰어 | 합성 앱',
