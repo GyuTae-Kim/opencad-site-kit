@@ -66,12 +66,14 @@ export async function registerServiceWorker(
   options: RegisterOptions = {},
 ): Promise<SwRegistration | null> {
   if (!sw) return null;
-  let reg: SwRegistration;
+  let reg: SwRegistration | undefined;
   try {
     reg = await sw.register(url, { scope: scopeOf(url) });
   } catch {
     return null;
   }
+  // 등록을 막은 자동화 브라우저(Playwright serviceWorkers: 'block')는 등록 결과 없이 끝난다 — 오프라인 없이 그대로
+  if (!reg) return null;
   let applied = false;
   let reloading = false;
   sw.addEventListener('controllerchange', () => {
