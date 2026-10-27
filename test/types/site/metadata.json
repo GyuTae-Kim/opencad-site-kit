@@ -1,0 +1,21 @@
+{
+  "title": "OpenCAD 시험 뷰어 | 합성 앱",
+  "description": "시험용 합성 앱입니다.",
+  "url": "https://gyutae-kim.github.io/opencad-step/",
+  "siteName": "OpenCAD 시험 뷰어",
+  "language": "ko",
+  "locale": "ko_KR",
+  "image": { "url": "https://gyutae-kim.github.io/opencad-step/og-opencad.jpg", "type": "image/jpeg", "width": 1200, "height": 630, "alt": "시험 화면" },
+  "author": { "@type": "Person", "name": "OpenCAD", "url": "https://gyutae-kim.github.io/" },
+  "application": {
+    "name": "OpenCAD 시험 뷰어",
+    "applicationCategory": "DesignApplication",
+    "isAccessibleForFree": true,
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "KRW" },
+    "featureList": ["보기"],
+    "sameAs": "https://github.com/GyuTae-Kim/opencad-step"
+  },
+  "breadcrumbs": [
+    { "@type": "ListItem", "position": 1, "name": "OpenCAD", "item": "https://gyutae-kim.github.io/opencad" }
+  ]
+}
