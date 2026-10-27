@@ -1,7 +1,8 @@
 # 네 앱에 적용하기
 
-opencad-step·opencad-skp·opencad-nc·opencad-dwgdxf가 저장소마다 복사해 쓰던 사이트 계층 파일을 이 도구(`opencad-site-kit#v0.1.3`)로 바꾸는 안내입니다.
-opencad-nc(6601bba)와 opencad-step(8a01519)이 적용했습니다(아래 "적용 기록"). SKP·DWG도 같은 순서로 하면 됩니다.
+opencad-step·opencad-skp·opencad-nc·opencad-dwgdxf가 저장소마다 복사해 쓰던 사이트 계층 파일을 이 도구로 바꾸는 안내입니다.
+**네 앱 모두 적용했습니다**(아래 "적용 기록"의 표). 새 판으로 올릴 때는 README의 "판 올리기"와 5절의 compare-dist를 따릅니다.
+
 아래 설정은 갈래 비교 시험(`test/variants/configs.ts`)과 같은 값이고, 그 시험이 각 앱 원본(기준 커밋 — STEP `4d3dd50`, SKP `424a666`,
 NC `eb2bd8c`, DWG `eea2fcf`)과 같은 입력에서 같은 dist(HTML·언어 페이지·앱 정보·sitemap·sw.js)가 나오는 것을 확인했습니다.
 
@@ -28,7 +29,7 @@ NC `eb2bd8c`, DWG `eea2fcf`)과 같은 입력에서 같은 dist(HTML·언어 페
 
 1. `package.json`
    ```json
-   "devDependencies": { "opencad-site-kit": "github:GyuTae-Kim/opencad-site-kit#v0.1.3" },
+   "devDependencies": { "opencad-site-kit": "github:GyuTae-Kim/opencad-site-kit#v0.1.4" },
    "scripts": {
      "check:seo": "opencad-site check-seo",
      "test:seo": "opencad-site test-seo",
@@ -36,9 +37,22 @@ NC `eb2bd8c`, DWG `eea2fcf`)과 같은 입력에서 같은 dist(HTML·언어 페
      "check:i18n": "opencad-site check-i18n"
    }
    ```
-   `build`·`test:i18n` 등 다른 스크립트는 그대로입니다. `npm install -D "opencad-site-kit@github:GyuTae-Kim/opencad-site-kit#v0.1.3"`로
+   `build`·`test:i18n` 등 다른 스크립트는 그대로입니다. `npm install -D "opencad-site-kit@github:GyuTae-Kim/opencad-site-kit#v0.1.4"`로
    받아 잠금 파일에 그 태그의 커밋이 적히게 합니다. 빌드 때만 쓰므로 `devDependencies`에 둡니다 — `dependencies`에 두면 이 도구의 선택 peer(`vite`·`jsdom`)
    때문에 npm이 vite·jsdom과 그 의존 수십 개의 `"dev": true`를 `"devOptional"`로 바꿔 잠금 파일이 200줄 넘게 바뀝니다.
+
+   **npm 11과 잠금 파일**: 이 컴퓨터의 npm 11(Node 24)은 잠금 파일을 다시 쓸 때 `"optional": true, "peer": true`인 항목(설치하지 않은
+   선택 peer — DWG에서는 vite의 선택 peer `lightningcss`와 그 기기별 꾸러미 11개, `detect-libc`, 모두 13개)을 지웁니다. CI의 npm 10(Node 22)이
+   쓴 잠금 파일이라 도구 항목 22줄만 더해야 할 것이 286줄 지워진 채로 바뀝니다(`npm ci`는 그래도 되지만 PR이 지저분해지고 다음 npm 10 설치가 되살림).
+   잠금 파일이 원래 npm 10으로 쓰였으면 npm 10으로 더합니다.
+   ```bash
+   git checkout package-lock.json                                                    # npm 11이 이미 고쳤다면 되돌리고
+   npx -y npm@10 install -D --package-lock-only "opencad-site-kit@github:GyuTae-Kim/opencad-site-kit#<태그>"
+   npm ci                                                                             # node_modules 맞추기(잠금 파일은 그대로)
+   git diff --stat package-lock.json                                                  # 도구 항목만(+22줄 안팎) 바뀌었는지
+   ```
+   이미 npm 11이 지운 잠금 파일에서 `npm@10 install --package-lock-only`를 해도 지워진 항목은 돌아오지 않으니, 꼭 원래 잠금 파일에서 시작합니다.
+   네 앱 가운데 그런 항목이 있는 것은 DWG(13개)뿐이었습니다(STEP·SKP·NC는 0개 — npm 11로 해도 같은 결과).
 2. 지울 파일: `tools/check-seo.mjs`, `tools/content-dates.mjs`, `tools/update-content-dates.mjs`, `tools/app-fingerprint.mjs`, `tools/check-i18n.mjs`,
    `tools/seo.test.mjs`, `tools/site-metadata.mjs`·`.d.mts`, `tools/localization-plugin.mjs`·`.d.mts`, `tools/site-plugin.mjs`·`.d.mts`(DWG는 없음),
    `src/app/language-menu.ts`, `src/app/analytics.ts`, `src/app/analytics-config.ts`, `tests/app/analytics.test.ts`(같은 시험이 이 저장소에 있습니다)
@@ -67,10 +81,13 @@ NC `eb2bd8c`, DWG `eea2fcf`)과 같은 입력에서 같은 dist(HTML·언어 페
    `tools/site.d.mts`(넷 같음):
    ```ts
    import type { Site } from 'opencad-site-kit/seo/site-metadata';
-   import type { serviceWorker } from 'opencad-site-kit/pwa/sw-plugin';
+   import type { ServiceWorkerOptions } from 'opencad-site-kit/pwa/sw-plugin';
    export const site: Site;
-   export const offline: Parameters<typeof serviceWorker>[0];
+   export const offline: ServiceWorkerOptions;   // v0.1.3까지는 Parameters<typeof serviceWorker>[0] — 같은 꼴
    ```
+   시험에서 미리 담을 목록·판 이름을 볼 때는 v0.1.4부터 `serviceWorkerValues(files, read, offline)`처럼 설정을 그대로 넘깁니다
+   (`source`는 쓰지 않고, 규칙 꼴 `lazy`는 빌드 결과가 없어 빈 모음으로 친다. 모음을 주려면 `{ ...offline, lazy: new Set([...]) }`).
+   v0.1.3까지는 `{ precache, sortUrls, version: offline.version }`처럼 골라 넘겨야 형이 맞습니다.
 6. 문서: README 개발 절의 `tools/…` 설명을 `opencad-site` 명령으로, `ANALYTICS.md`(SKP는 `docs/analytics.md`)의
    "측정 ID는 `src/app/analytics-config.ts`" → "`opencad-site-kit`의 `analytics/config.ts`".
 
@@ -148,9 +165,20 @@ NC `eb2bd8c`, DWG `eea2fcf`)과 같은 입력에서 같은 dist(HTML·언어 페
   ```
   `src/app/pwa.ts`를 지웁니다.
 - `tests/app/pwa.test.ts`: `from '../../src/app/pwa'` → `from 'opencad-site-kit/pwa/client'`. 등록·launchQueue 시험은 이 저장소에 같은 것이 있으니
-  지워도 됩니다(남기면 `consumeLaunchFiles(open, w)` → `consumeLaunchFiles(open, undefined, w)`이고 `open`은 파일 배열을 받습니다). 서비스 워커 빌드 시험은
-  `precacheList(root)` → `serviceWorkerValues(listFiles(root), (f) => readFileSync(join(root, f)), offline).precache`,
-  `serviceWorkerSource(tpl, list, files)` → `fillTemplate(tpl, { version, precache: list })`(`opencad-site-kit/pwa/sw-plugin`, `../../tools/site.mjs`)로.
+  지워도 됩니다(남기면 `consumeLaunchFiles(open, w)` → `consumeLaunchFiles(open, undefined, w)`이고 `open`은 파일 배열을 받습니다).
+  서비스 워커 빌드 시험(실제 SKP 적용에서 쓴 꼴):
+  ```ts
+  import { fillTemplate, listFiles, serviceWorkerValues } from 'opencad-site-kit/pwa/sw-plugin';
+  import { offline, precache } from '../../tools/site.mjs';
+  const swOptions = { precache, sortUrls: true, version: offline.version };     // v0.1.4부터는 offline을 그대로 넘겨도 된다
+  const values = () => serviceWorkerValues(listFiles(root), (f) => readFileSync(join(root, f)), swOptions);
+  expect(values().precache).toEqual(['./', 'assets/index-1.css', /* … 주소 차례 */]);
+  const a = fillTemplate("const VERSION = '__VERSION__';\nconst ASSETS = __PRECACHE__;", values());
+  ```
+  워커를 돌리는 시험은 `serviceWorkerSource(template, list, files)` → `fillTemplate(template, { version: '0123456789abcdef', precache: list })`
+  (판 이름은 아무 16자리). `tools/site.d.mts`에 `precache`를 내보냅니다.
+- `tools/sw-template.js`의 첫 주석(`tools/sw-plugin.mjs`가 만든다 — VERSION·ASSETS)은 sw.js에 그대로 들어갑니다. 바이트 비교를 지키려면 자리 이름만 바꾸고
+  주석은 그대로 둡니다(DWG는 2단계에서 주석을 고쳐 sw.js 둘째 줄이 바뀌었습니다 — 어느 쪽이든 판 이름이 바뀌는 단계에서 함께).
 - `.github/workflows/mobile-validation.yml`: 기준 빌드 뒤 `git checkout --detach "$GITHUB_SHA"` 다음 줄에 `npm ci`를 더하고(기준 커밋의
   node_modules에는 이 도구가 없을 수 있다), `node tools/serve-performance.mjs` → `node_modules/.bin/opencad-site serve-performance`,
   `node tools/performance-summary.mjs` → `node_modules/.bin/opencad-site performance-summary`.
@@ -248,8 +276,10 @@ NC `eb2bd8c`, DWG `eea2fcf`)과 같은 입력에서 같은 dist(HTML·언어 페
   const precacheable = (f: string, lazy = new Set<string>()) => precache(f, { lazy });
   const precacheUrls = (files: string[], lazy = new Set<string>()) => serviceWorkerValues(files, () => '', { ...offline, lazy }).precache;
   const lazyFiles = (bundle: Record<string, BundleItem>) => kitLazyFiles(bundle, lazyRules);
-  const serviceWorkerSource = (values: Parameters<typeof fillTemplate>[1]) => fillTemplate(readFileSync('tools/sw-template.js', 'utf8'), values);
+  const template = readFileSync(new URL('../../tools/sw-template.js', import.meta.url), 'utf8');   // 작업 폴더가 아니라 시험 파일 기준
+  const serviceWorkerSource = (values: Parameters<typeof fillTemplate>[1]) => fillTemplate(template, values);
   ```
+  (v0.1.4부터 `{ ...offline, lazy }`는 형 맞추기 없이 그대로 됩니다. `vite.config.ts`의 `pdfjsAssets()` 플러그인은 사이트 계층이 아니라 그대로 둡니다.)
 - `tests/webapp-manifest.test.ts`: `localizeHtml(html, lang)` → `localizeHtml(html, lang, site)`(`site`는 `../tools/site.mjs`), `localizeManifest`는 그대로 가져와도 됩니다.
 - `.github/workflows/mobile-validation.yml`: SKP와 같이 `npm ci`를 더하고 성능 명령을 `node_modules/.bin/opencad-site …`로.
 
@@ -302,16 +332,27 @@ dist는 앱 저장소의 `.runtime/`(git 무시)에 둡니다.
    - `assets/*.js`(·`.map`) 가운데 공용 번역기·PWA 연결·방문 통계가 든 묶음: `changed`(4절의 코드 차이 — 번역기의 `configureI18n`·기억 열쇠·DWG 밖 갈래의 `uiParameters`,
      DWG의 여러 줄·이은 문장 고침, PWA 연결, 형식 목록)
    - `index.html`·`<언어>/index.html`: `same-but-asset-names`(스크립트 이름의 내용 지문만)
-   - `sw.js`: 판 이름이 든 줄만 `changed`(판 이름을 캐시 이름에도 쓰는 앱은 두 줄 — 미리 담을 목록은 이름 지문만 다르다)
+   - `sw.js`: 판 이름이 든 줄만 `changed`(판 이름을 캐시 이름에도 쓰는 앱은 두 줄 — 미리 담을 목록은 이름 지문만 다르다).
+     목록을 주소 차례로 두는 앱(`sortUrls: true` — SKP)은 바뀐 스크립트의 이름 지문에 따라 목록 안 차례도 바뀝니다(같은 CSS 이름 앞뒤로 자리가 옮겨 감)
    - 앱 정보·사이트맵·`.nojekyll`·그림·글꼴: `same`
    이 밖에 `changed`가 있으면 원인을 적고 고칩니다.
 4. 마무리: `npm run typecheck && npm test && npm run test:seo`, 마지막에 `npm run update:content-dates -- --at $(date -u +%Y-%m-%dT%H:%M:%SZ)`
    → `npm run build`(안에서 `check:seo`·`check:i18n`) → `git status`. 2단계에서 JS가 바뀌므로 내용 수정일이 올라갑니다.
 5. 헤드리스 Chrome으로 넓은 화면·375px에서 언어 페이지 둘, 첫 방문 서비스 워커·오프라인 다시 열기·새 판 알림과 새로 고침을 봅니다.
+   첫 설치 때 다시 읽지 않는지는 새 프로필로 첫 쪽을 열고 서비스 워커가 맡은 뒤 `performance.getEntriesByType('navigation')[0].type`이
+   `'navigate'`인지 봅니다(다시 읽었으면 `'reload'` — SKP 적용 전 dist가 그랬습니다. `performance.timeOrigin`은 다시 읽기가 맡기 전에 끝나면 놓칩니다).
+   같은 확인 스크립트를 적용 전 dist에도 돌려 예제의 상태 값(장면·면 수 등)이 같은지 견주면 좋습니다.
    `.github/workflows/mobile-validation.yml`이 있는 앱은 기준 커밋을 빌드한 뒤 이 커밋으로 돌아와 `npm ci`를 다시 하고(기준 커밋에는 도구가 없을 수 있다)
    성능 명령을 `node_modules/.bin/opencad-site serve-performance …`·`performance-summary …`로 부릅니다.
 
 ## 적용 기록
+
+| 앱 | 적용 판 | PR | 1단계(빌드 플러그인) | 2단계에서 바뀐 것(지문·판 이름 말고) |
+|---|---|---|---|---|
+| opencad-nc | v0.1.1 | #17(병합) | 32개 같음 | `index-*.js` +530바이트 |
+| opencad-step | v0.1.2 | #18(병합) | 34개 같음 | `index-*.js` +819바이트, `pwa.ts`의 null 고침이 함께 들어옴 |
+| opencad-skp | v0.1.3 | #21 | 34개 같음 | `index-*.js` +812바이트, 첫 설치 때 다시 읽지 않음, sw.js 목록 차례 |
+| opencad-dwgdxf | v0.1.3(v0.1.2로 적용 뒤 올림) | #28 | 263개 같음 | `index-*.js` +628·`editor-*.js` +133바이트, 번역 고침, sw.js 둘째 줄 주석 |
 
 ### opencad-nc(2026-10-27, 도구 v0.1.1)
 
@@ -332,12 +373,34 @@ dist는 앱 저장소의 `.runtime/`(git 무시)에 둡니다.
 
 STEP의 `src/app/pwa.ts`에는 "등록 결과가 없으면 null" 고침이 없었습니다(NC·도구 v0.1.1에는 있음) — 적용하면서 함께 고쳐집니다.
 
-다음 앱에서 볼 것:
+### opencad-skp(2026-10-27, 도구 v0.1.3)
+
+| 단계 | compare-dist(적용 전 8550ee0의 dist와) | 확인 |
+|---|---|---|
+| 1단계 빌드 플러그인 | 같음 34 | vitest 582·tsc·`npm run build`(앱 확인 명령)·test:seo 통과 |
+| 2단계 | 같음 26, 자산 이름만 5, 바뀜 3: `assets/index-*.js`(436,232 → 437,044바이트)·`.map`, `sw.js`(판 이름 줄과 주소 차례 목록의 스크립트 자리) | vitest 566·tsc·test:i18n·check:i18n·test:seo, 헤드리스 19개 통과 |
+| 첫 설치 | 적용 전 dist: navigation `reload`(한 번 다시 읽음) → 적용 뒤: `navigate` | 바뀐 동작(고침) |
+| 예제 | 장면 탭 4개(앞마당·식탁·단면·위에서), 면 117·모서리 267·삼각형 594, 태그 6·재질 11, 그리기 모드·선 대비가 적용 전 dist와 같음 | 장면 탭·모서리 그대로 |
+| 내용 수정일 갱신 뒤 | 위에 더해 `dateModified`·`lastmod` | `npm run build`·test:seo 통과 |
+
+### opencad-dwgdxf(2026-10-27, 도구 v0.1.2 → v0.1.3)
+
+| 단계 | compare-dist(적용 전 c359b20의 dist와) | 확인 |
+|---|---|---|
+| 1단계 빌드 플러그인 | 같음 263(글꼴·PDF 자료·예제 포함) | vitest(CI 조건 2,866개)·`npm run build`·test:seo 통과 |
+| 2단계 | 같음 253, 자산 이름만 5(다섯 언어 페이지 — 정적 소개 글은 그대로), 바뀜 5: `index-*.js`(21,953 → 22,581)·`editor-*.js`(3,122,129 → 3,122,262)와 두 `.map`, `sw.js`(첫 주석·판 이름·두 목록의 자산 이름) | 사전 덩어리·해석 워커·CSS·앱 정보·sitemap·글꼴·예제 같음. vitest(2,850개)·tsc·test:i18n·check:i18n·test:seo 통과 |
+| 번역기 | 사전 열쇠 8,214개 차이 0. 소스의 한국어 글 7,030개 가운데 17개가 달라 16개는 한국어를 덜 남기고 1개는 빈칸 자리만. 소스 글 둘을 이은 14,058개에서 21,511건이 달라 21,251건이 한국어를 덜 남기고 한국어가 늘어난 것은 0 | 4절의 DWG 고침 |
+| v0.1.2 → v0.1.3 | 263개 모두 같음 | 성능 예산 명령만 더한 판 |
+| 잠금 파일 | npm 11로 더하면 선택 peer 13개 항목(286줄)이 지워져 npm 10으로 더함(2절) | 도구 항목 22줄만 |
+
+다음 앱(또는 새 OpenCAD 앱)에서 볼 것:
 - 1단계 전에 `git grep -n "tools/"`로 `tools/sw-plugin.mjs`·`tools/site-metadata.mjs`·`tools/localization-plugin.mjs`를 가져오는 시험·문서를 찾아 둡니다
   (시험은 1단계에서, 소스의 주석은 소스 맵 때문에 2단계에서 고칩니다). STEP·NC는 `tests/sw.test.ts` 하나였습니다.
 - 휴대폰 검사 워크플로가 있는 앱은 `.github/workflows/mobile-validation.yml`의 기준 빌드 뒤 `npm ci`를 다시 넣습니다(NC·STEP 모두 했습니다).
   SKP·DWG에도 `tools/check-performance-budget.mjs`가 생겼으면 v0.1.3의 명령으로 바꿉니다.
-- SKP는 `src/app/main.ts`의 `consumeLaunchFiles((file) => …)`를 파일 배열로, 시험의 `consumeLaunchFiles(open, w)`를 `(open, undefined, w)`로.
-  SKP 원본은 첫 설치 때(`clients.claim`) 페이지를 한 번 다시 읽었습니다 — 바뀌는 동작이니 헤드리스로 첫 방문이 다시 읽지 않는지 봅니다.
-- DWG는 `src/app/pwa.ts`를 다시 내보내기로 두면 `pwa-app.ts`·시험을 거의 그대로 둘 수 있습니다. `tests/webapp-manifest.test.ts`의 `localizeHtml`에 `site`를 넘깁니다.
+- 단일 파일을 여는 앱은 `consumeLaunchFiles((files) => open(files[0]!))`, 시험은 `consumeLaunchFiles(open, undefined, w)` 꼴로.
+- 첫 설치 때 워커가 `skipWaiting`·`clients.claim`을 하는 앱은 헤드리스로 첫 방문 navigation 꼴이 `navigate`인지 봅니다(5절).
+- 앱 고유의 공유 받기 안내 같은 것은 `src/app/pwa.ts`에서 도구를 다시 내보내고 그 함수만 남기면 나머지 코드·시험을 거의 그대로 둘 수 있습니다(DWG).
+- 시험에서 앱 파일을 읽을 때는 작업 폴더 상대 경로 대신 `new URL('../../tools/…', import.meta.url)`.
+- 잠금 파일에 `"peer": true` 항목이 있으면 npm 10으로 의존을 더합니다(2절).
 - 번역기 결과는 STEP·SKP·NC에서 같고(STEP·NC는 실제 적용에서도 언어 페이지 바이트가 같았습니다) DWG에서만 여러 줄·이은 문장이 달라집니다(4절). DWG는 2단계 뒤 다섯 언어 페이지의 정적 소개가 그대로인지(`check:i18n`) 꼭 봅니다.
