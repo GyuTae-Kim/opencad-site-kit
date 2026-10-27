@@ -8,6 +8,7 @@
  *   opencad-site compare-dist <전 dist> <후 dist> [--fail-on-change]   (적용 전·후 빌드 결과 견주기)
  *   opencad-site serve-performance <폴더> <포트>
  *   opencad-site performance-summary <폴더>
+ *   opencad-site check-performance-budget <폴더> [예산 JSON, 기본 tools/performance-budget.json]
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -54,11 +55,12 @@ switch (command) {
   }
   case 'serve-performance':
   case 'performance-summary':
+  case 'check-performance-budget':
     // 원래 스크립트는 process.argv[2]부터 인자를 읽는다
     process.argv.splice(2, 1);
     await import(`../perf/${command}.mjs`);
     break;
   default:
-    console.error('Usage: opencad-site <check-seo|check-i18n|update-content-dates|test-seo|compare-dist|serve-performance|performance-summary> [options]');
+    console.error('Usage: opencad-site <check-seo|check-i18n|update-content-dates|test-seo|compare-dist|serve-performance|performance-summary|check-performance-budget> [options]');
     process.exit(command ? 1 : 0);
 }
