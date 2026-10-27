@@ -1,6 +1,6 @@
 # 네 앱에 적용하기
 
-opencad-step·opencad-skp·opencad-nc·opencad-dwgdxf가 저장소마다 복사해 쓰던 사이트 계층 파일을 이 도구(`opencad-site-kit#v0.1.0`)로 바꾸는 안내입니다.
+opencad-step·opencad-skp·opencad-nc·opencad-dwgdxf가 저장소마다 복사해 쓰던 사이트 계층 파일을 이 도구(`opencad-site-kit#v0.1.1`)로 바꾸는 안내입니다.
 아래 설정은 갈래 비교 시험(`test/variants/configs.ts`)과 같은 값이고, 그 시험이 각 앱 원본(기준 커밋 — STEP `4d3dd50`, SKP `424a666`,
 NC `eb2bd8c`, DWG `eea2fcf`)과 같은 입력에서 같은 dist(HTML·언어 페이지·앱 정보·sitemap·sw.js)가 나오는 것을 확인했습니다.
 
@@ -26,7 +26,7 @@ NC `eb2bd8c`, DWG `eea2fcf`)과 같은 입력에서 같은 dist(HTML·언어 페
 
 1. `package.json`
    ```json
-   "dependencies": { "opencad-site-kit": "github:GyuTae-Kim/opencad-site-kit#v0.1.0" },
+   "dependencies": { "opencad-site-kit": "github:GyuTae-Kim/opencad-site-kit#v0.1.1" },
    "scripts": {
      "check:seo": "opencad-site check-seo",
      "test:seo": "opencad-site test-seo",

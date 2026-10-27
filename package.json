@@ -1,6 +1,6 @@
 {
   "name": "opencad-site-kit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "OpenCAD 앱 공용 사이트 도구: 다국어 페이지·검색 정보·내용 수정일·홈 화면 앱(오프라인)·방문 통계·성능 측정",
   "license": "MIT",

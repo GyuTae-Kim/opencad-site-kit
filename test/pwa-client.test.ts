@@ -52,6 +52,14 @@ describe('서비스 워커 등록과 새 판 알림', () => {
     expect(reload).not.toHaveBeenCalled();
   });
 
+  it('등록을 막은 브라우저가 결과 없이 끝내면 조용히 null을 돌려준다(콘솔 오류 없음)', async () => {
+    const { sw } = fakeContainer({});
+    sw.register = async () => undefined as unknown as SwRegistration;
+    const onUpdate = vi.fn();
+    await expect(registerServiceWorker(sw, 'sw.js', onUpdate, vi.fn())).resolves.toBeNull();
+    expect(onUpdate).not.toHaveBeenCalled();
+  });
+
   it('상대 주소로 부르면 문서 기준 ./를 범위로 등록한다', async () => {
     const { sw } = fakeContainer({});
     await registerServiceWorker(sw, 'sw.js', vi.fn(), vi.fn());

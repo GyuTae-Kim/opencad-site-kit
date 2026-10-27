@@ -35,7 +35,7 @@ npm에 올리지 않고 GitHub 의존으로 씁니다. 브라우저 모듈은 Ty
 
 ```json
 "dependencies": {
-  "opencad-site-kit": "github:GyuTae-Kim/opencad-site-kit#v0.1.0"
+  "opencad-site-kit": "github:GyuTae-Kim/opencad-site-kit#v0.1.1"
 },
 "scripts": {
   "build": "tsc --noEmit && vite build && npm run check:seo && npm run check:i18n",
