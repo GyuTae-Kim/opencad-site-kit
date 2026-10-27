@@ -1,0 +1,25 @@
+/**
+ * 형 확인 전용(tsc만 — 실행하지 않는다): 앱의 vite.config.ts가 docs/ADOPTION.md처럼 이 도구를 패키지 이름으로 가져와
+ * JSON 사이트 정보·앱 정보 설정·서비스 워커 설정을 넘길 때 형이 맞는지 본다.
+ */
+import { siteLocalization } from 'opencad-site-kit/i18n/localization-plugin';
+import { defineSite } from 'opencad-site-kit/seo/site-metadata';
+import { siteMetadata } from 'opencad-site-kit/seo/site-plugin';
+import { serviceWorker, templateSource, type Precache } from 'opencad-site-kit/pwa/sw-plugin';
+import type { Plugin } from 'vite';
+import metadata from './site/metadata.json' with { type: 'json' };
+import history from './site/content-history.json' with { type: 'json' };
+import { fileHandling } from './tools/file-handling.mjs';
+
+const site = defineSite({ metadata, history, manifest: { source: new URL('./public/manifest.webmanifest', import.meta.url) } });
+const linked = defineSite({ metadata, history, manifest: {
+  source: new URL('./site/manifest.webmanifest', import.meta.url), emitDefault: true, links: 'metadata',
+  extend: (manifest) => ({ ...manifest, ...fileHandling(['nc']) }),
+} });
+const precache: Precache = (path, { lazy }) => path.startsWith('assets/') && !lazy.has(path);
+const legacySource = ({ version, urls }: { version: string; urls: string[] }) => `${version}${urls.length}`;
+export const plugins: Plugin[] = [
+  siteLocalization(site), siteMetadata(site), siteMetadata(linked, { nojekyll: false }),
+  serviceWorker({ source: ({ version, precache: urls }) => legacySource({ version, urls }), version: { length: 12, separator: '', terminator: '' } }),
+  serviceWorker({ source: templateSource(new URL('./tools/sw-template.js', import.meta.url)), precache, sortUrls: true, staticDirs: ['fonts/'], lazy: { modules: [/pdfjs-dist/] } }),
+];
