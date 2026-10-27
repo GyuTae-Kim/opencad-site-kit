@@ -1,0 +1,62 @@
+{
+  "name": "opencad-site-kit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OpenCAD 앱 공용 사이트 도구: 다국어 페이지·검색 정보·내용 수정일·홈 화면 앱(오프라인)·방문 통계·성능 측정",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    "./i18n/core": { "types": "./i18n/core.d.mts", "default": "./i18n/core.mjs" },
+    "./i18n/localization-plugin": { "types": "./i18n/localization-plugin.d.mts", "default": "./i18n/localization-plugin.mjs" },
+    "./i18n/check-i18n": { "types": "./i18n/check-i18n.d.mts", "default": "./i18n/check-i18n.mjs" },
+    "./i18n/language-menu": "./i18n/language-menu.ts",
+    "./seo/site-metadata": { "types": "./seo/site-metadata.d.mts", "default": "./seo/site-metadata.mjs" },
+    "./seo/site-plugin": { "types": "./seo/site-plugin.d.mts", "default": "./seo/site-plugin.mjs" },
+    "./seo/content-dates": { "types": "./seo/content-dates.d.mts", "default": "./seo/content-dates.mjs" },
+    "./seo/app-fingerprint": { "types": "./seo/app-fingerprint.d.mts", "default": "./seo/app-fingerprint.mjs" },
+    "./seo/check-seo": { "types": "./seo/check-seo.d.mts", "default": "./seo/check-seo.mjs" },
+    "./seo/update-content-dates": { "types": "./seo/update-content-dates.d.mts", "default": "./seo/update-content-dates.mjs" },
+    "./seo/seo-test": { "types": "./seo/seo-test.d.mts", "default": "./seo/seo-test.mjs" },
+    "./seo/compare-dist": { "types": "./seo/compare-dist.d.mts", "default": "./seo/compare-dist.mjs" },
+    "./pwa/manifest": { "types": "./pwa/manifest.d.mts", "default": "./pwa/manifest.mjs" },
+    "./pwa/sw-plugin": { "types": "./pwa/sw-plugin.d.mts", "default": "./pwa/sw-plugin.mjs" },
+    "./pwa/client": "./pwa/client.ts",
+    "./analytics": "./analytics/analytics.ts",
+    "./analytics/config": "./analytics/config.ts",
+    "./perf/performance-summary": "./perf/performance-summary.mjs",
+    "./perf/serve-performance": "./perf/serve-performance.mjs",
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "opencad-site": "./bin/opencad-site.mjs"
+  },
+  "files": [
+    "i18n",
+    "seo",
+    "pwa",
+    "analytics",
+    "perf",
+    "bin"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "variants": "node scripts/extract-variants.mjs"
+  },
+  "peerDependencies": {
+    "jsdom": ">=22.1.0",
+    "vite": ">=7.3.7"
+  },
+  "peerDependenciesMeta": {
+    "jsdom": { "optional": true },
+    "vite": { "optional": true }
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "jsdom": "22.1.0",
+    "typescript": "^7.0.2",
+    "vite": "^7.3.7",
+    "vitest": "^3.2.7"
+  }
+}
