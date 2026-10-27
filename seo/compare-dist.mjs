@@ -36,9 +36,12 @@ export function compareDist(before, after) {
       const xl = xs.split('\n'), yl = ys.split('\n');
       const line = xl.findIndex((text, i) => text !== yl[i]);
       const at = line < 0 ? xl.length : line;
-      const column = [...(xl[at] ?? '')].findIndex((ch, i) => ch !== [...(yl[at] ?? '')][i]);
-      const clip = (text) => (text ?? '').slice(Math.max(0, column - 60), Math.max(0, column) + 100);
-      rows.push({ file: key, status: 'changed', line: at + 1, before: clip(xl[at]), after: clip(yl[at]) });
+      // 처음 다른 글자(줄 하나가 수백 KB인 묶은 JS도 한 번 훑는다)
+      const left = xl[at] ?? '', right = yl[at] ?? '';
+      let column = 0;
+      while (column < left.length && column < right.length && left[column] === right[column]) column++;
+      const clip = (text) => text.slice(Math.max(0, column - 60), column + 100);
+      rows.push({ file: key, status: 'changed', line: at + 1, column: column + 1, before: clip(left), after: clip(right) });
     } else if (x.equals(y)) rows.push({ file: key, status: 'same-but-asset-names' });
     else rows.push({ file: key, status: 'changed' });
   }
@@ -51,7 +54,7 @@ export function formatComparison(rows) {
   const lines = [`same ${count('same')}, same but asset names ${count('same-but-asset-names')}, changed ${count('changed')}, added ${count('added')}, removed ${count('removed')}`];
   for (const row of rows) {
     if (row.status === 'same' || row.status === 'same-but-asset-names') continue;
-    lines.push(`${row.status.padEnd(8)} ${row.file}${row.line ? `:${row.line}` : ''}`);
+    lines.push(`${row.status.padEnd(8)} ${row.file}${row.line ? `:${row.line}:${row.column}` : ''}`);
     if (row.before !== undefined) lines.push(`  before: ${row.before}`, `  after:  ${row.after}`);
   }
   return lines.join('\n');
