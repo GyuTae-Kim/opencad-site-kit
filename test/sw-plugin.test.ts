@@ -57,6 +57,19 @@ describe('precache list and version', () => {
   });
 });
 
+describe('the plugin options as value options', () => {
+  it('takes the serviceWorker() options as they are: ignores source, treats lazy rules as an empty set, and a given set still wins', () => {
+    const precache = (path: string, { lazy }: { lazy: ReadonlySet<string> }) => defaultPrecacheable(path) && !lazy.has(path);
+    const offline = { source: () => 'unused', precache, sortUrls: true, staticDirs: ['fonts/'], version: { length: 12, key: 'url' as const }, lazy: { facade: [/locales/] } };
+    const picked = serviceWorkerValues(files, read, { precache, sortUrls: true, staticDirs: ['fonts/'], version: { length: 12, key: 'url' } });
+    expect(serviceWorkerValues(files, read, offline)).toEqual(picked);
+    expect(picked.precache).toContain('assets/locale-en-2.js');
+    const lazy = new Set(['assets/locale-en-2.js']);
+    expect(serviceWorkerValues(files, read, { ...offline, lazy }).precache).not.toContain('assets/locale-en-2.js');
+    expect(serviceWorkerValues(files, read, { lazy: null }).precache).toEqual(serviceWorkerValues(files, read).precache);
+  });
+});
+
 describe('worker source', () => {
   it('fills each placeholder once, safely even with $ in file names', () => {
     const template = "const V = '__VERSION__'; const S = '__STATIC__'; const P = __PRECACHE__; const A = __ASSETS__; // __ASSETS__";

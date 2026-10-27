@@ -35,7 +35,7 @@ npm에 올리지 않고 GitHub 의존으로 씁니다. 빌드 때만 쓰므로 `
 
 ```json
 "devDependencies": {
-  "opencad-site-kit": "github:GyuTae-Kim/opencad-site-kit#v0.1.3"
+  "opencad-site-kit": "github:GyuTae-Kim/opencad-site-kit#v0.1.4"
 },
 "scripts": {
   "build": "tsc --noEmit && vite build && npm run check:seo && npm run check:i18n",
@@ -93,6 +93,9 @@ export default defineConfig({ base: './', plugins: [siteLocalization(site), site
 - `sortUrls`, `version`(`{ length, key: 'file' | 'url', separator, terminator }`): 앱이 예전에 쓰던 목록 차례·판 이름을 그대로 두는 설정.
   새 앱은 기본값(앞 16자리, 파일 경로, 이름과 내용 사이·뒤에 `\0`)을 씁니다
 
+이 설정의 형은 `ServiceWorkerOptions`이고, 시험에서는 같은 설정을 `serviceWorkerValues(listFiles(dist), read, offline)`에 그대로 넘겨
+미리 담을 목록·판 이름을 봅니다(`source`는 쓰지 않고 규칙 꼴 `lazy`는 빈 모음 — 모음을 주려면 `{ ...offline, lazy: new Set([...]) }`).
+
 브라우저 쪽은 패키지 경로로 가져옵니다.
 
 ```ts
@@ -145,6 +148,17 @@ npm test            # .runtime/variants가 있으면 원본과 견주는 시험�
 [docs/ADOPTION.md](docs/ADOPTION.md) 설정으로 쓴 것을 같은 입력으로 빌드해 dist가 바이트까지 같은지, 원본 `check-i18n`과 내용 지문이 같은지,
 앱 사전 전체로 번역 결과가 같은지 봅니다. 앱이 이 도구로 옮긴 뒤에는 `--ref`로 옮기기 전 커밋을 주면 됩니다.
 `OPENCAD_SITE_KIT_DISTS=step:<dist>,dwg:<dist>`를 주면 실제 빌드 결과의 파일 목록으로 sw.js 원본도 견줍니다(읽기만 합니다).
+
+## 적용한 앱
+
+| 앱 | 적용한 판 | PR |
+|---|---|---|
+| [opencad-nc](https://github.com/GyuTae-Kim/opencad-nc) | v0.1.1 | #17 |
+| [opencad-step](https://github.com/GyuTae-Kim/opencad-step) | v0.1.2 | #18 |
+| [opencad-skp](https://github.com/GyuTae-Kim/opencad-skp) | v0.1.3 | #21 |
+| [opencad-dwgdxf](https://github.com/GyuTae-Kim/opencad-dwgdxf) | v0.1.3 | #28 |
+
+단계마다의 빌드 결과 비교와 바뀐 동작은 [docs/ADOPTION.md](docs/ADOPTION.md)의 "적용 기록"에 있습니다. 앱이 새 판으로 올릴 때는 이 표도 고칩니다.
 
 ## 남은 일
 
