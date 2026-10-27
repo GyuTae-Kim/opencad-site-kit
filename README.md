@@ -30,12 +30,12 @@ OpenCAD 앱(STEP·SKP·NC·DWG·DXF)이 함께 쓰는 사이트 계층 도구입
 
 ## 앱에서 쓰기
 
-npm에 올리지 않고 GitHub 의존으로 씁니다. 브라우저 모듈은 TypeScript 원본 그대로 내보내므로 Vite 같은 번들러와 `moduleResolution: "bundler"`가 필요합니다.
+npm에 올리지 않고 GitHub 의존으로 씁니다. 빌드 때만 쓰므로 `devDependencies`에 둡니다(`npm install -D "opencad-site-kit@github:GyuTae-Kim/opencad-site-kit#<태그>"`). 브라우저 모듈은 TypeScript 원본 그대로 내보내므로 Vite 같은 번들러와 `moduleResolution: "bundler"`가 필요합니다.
 빌드 도구(`.mjs`)는 Node 22와 Vite 7에서 돌고, 형 선언(`.d.mts`)이 함께 있습니다. `jsdom`·`vite`는 앱이 이미 가진 것을 씁니다.
 
 ```json
-"dependencies": {
-  "opencad-site-kit": "github:GyuTae-Kim/opencad-site-kit#v0.1.1"
+"devDependencies": {
+  "opencad-site-kit": "github:GyuTae-Kim/opencad-site-kit#v0.1.2"
 },
 "scripts": {
   "build": "tsc --noEmit && vite build && npm run check:seo && npm run check:i18n",
