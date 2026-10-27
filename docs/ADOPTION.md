@@ -1,7 +1,7 @@
 # 네 앱에 적용하기
 
-opencad-step·opencad-skp·opencad-nc·opencad-dwgdxf가 저장소마다 복사해 쓰던 사이트 계층 파일을 이 도구(`opencad-site-kit#v0.1.2`)로 바꾸는 안내입니다.
-opencad-nc가 처음 적용했습니다(6601bba → 아래 "NC 적용 기록"). 다른 앱도 같은 순서로 하면 됩니다.
+opencad-step·opencad-skp·opencad-nc·opencad-dwgdxf가 저장소마다 복사해 쓰던 사이트 계층 파일을 이 도구(`opencad-site-kit#v0.1.3`)로 바꾸는 안내입니다.
+opencad-nc(6601bba)와 opencad-step(8a01519)이 적용했습니다(아래 "적용 기록"). SKP·DWG도 같은 순서로 하면 됩니다.
 아래 설정은 갈래 비교 시험(`test/variants/configs.ts`)과 같은 값이고, 그 시험이 각 앱 원본(기준 커밋 — STEP `4d3dd50`, SKP `424a666`,
 NC `eb2bd8c`, DWG `eea2fcf`)과 같은 입력에서 같은 dist(HTML·언어 페이지·앱 정보·sitemap·sw.js)가 나오는 것을 확인했습니다.
 
@@ -19,7 +19,8 @@ NC `eb2bd8c`, DWG `eea2fcf`)과 같은 입력에서 같은 dist(HTML·언어 페
 | tools/seo.test.mjs | STEP·SKP·NC / DWG | DWG에 지문 시험 없음 | 지문·날짜 시험은 이 저장소로, 앱은 `opencad-site test-seo`(설정 확인) |
 | tools/sw-plugin.mjs(+.d.mts) | 넷 다 다름 | 워커 본문(STEP·NC는 함수, SKP·DWG는 틀 파일), 미리 담을 규칙, 판 이름 짓기(12/16자리, 구분자, 이름=경로/주소), 목록 차례, DWG의 쓸 때만 받는 덩어리·정적 폴더 판 | `serviceWorker(options)` — 다른 점은 모두 설정. 워커 본문은 앱에 남김 |
 | tools/sw-template.js | SKP / DWG | 최근 문서 저장소 꼴·캐시 방식이 다름 | 앱에 남김(SKP는 자리 이름 하나만 바꿈) |
-| tools/performance-summary.mjs, serve-performance.mjs | SKP·NC·DWG 같음(NC는 6601bba에서 더함) | — | `opencad-site performance-summary`·`serve-performance` |
+| tools/performance-summary.mjs, serve-performance.mjs | 넷 같음(NC는 6601bba, STEP은 901fca9에서 더함) | — | `opencad-site performance-summary`·`serve-performance` |
+| tools/check-performance-budget.mjs(+ tools/performance-budget.json) | STEP만(901fca9) | 후보 가운데값을 예산 파일과 견줌 | v0.1.3부터 `opencad-site check-performance-budget <폴더> [예산.json]`(같은 동작). 예산 파일은 앱에 남김 |
 | src/app/analytics.ts | STEP / SKP·DWG / NC | 내보내기 형식에 STEP의 stl·obj·csv, 여는 형식에 NC의 pgi·xml | 합집합 |
 | src/app/pwa.ts | 넷 다 다름 | 부르는 꼴, 첫 설치 다시 읽기, 같은 워커 두 번 알림, 앱으로 돌아올 때 새 판 확인(STEP·NC만), 파일 여러 개 넘기기(NC·DWG). NC 6601bba는 등록 결과가 없으면 `null`(도구 v0.1.1과 같은 고침) | DWG 꼴 + `onVisible` 선택 |
 
@@ -27,7 +28,7 @@ NC `eb2bd8c`, DWG `eea2fcf`)과 같은 입력에서 같은 dist(HTML·언어 페
 
 1. `package.json`
    ```json
-   "devDependencies": { "opencad-site-kit": "github:GyuTae-Kim/opencad-site-kit#v0.1.2" },
+   "devDependencies": { "opencad-site-kit": "github:GyuTae-Kim/opencad-site-kit#v0.1.3" },
    "scripts": {
      "check:seo": "opencad-site check-seo",
      "test:seo": "opencad-site test-seo",
@@ -35,7 +36,7 @@ NC `eb2bd8c`, DWG `eea2fcf`)과 같은 입력에서 같은 dist(HTML·언어 페
      "check:i18n": "opencad-site check-i18n"
    }
    ```
-   `build`·`test:i18n` 등 다른 스크립트는 그대로입니다. `npm install -D "opencad-site-kit@github:GyuTae-Kim/opencad-site-kit#v0.1.2"`로
+   `build`·`test:i18n` 등 다른 스크립트는 그대로입니다. `npm install -D "opencad-site-kit@github:GyuTae-Kim/opencad-site-kit#v0.1.3"`로
    받아 잠금 파일에 그 태그의 커밋이 적히게 합니다. 빌드 때만 쓰므로 `devDependencies`에 둡니다 — `dependencies`에 두면 이 도구의 선택 peer(`vite`·`jsdom`)
    때문에 npm이 vite·jsdom과 그 의존 수십 개의 `"dev": true`를 `"devOptional"`로 바꿔 잠금 파일이 200줄 넘게 바뀝니다.
 2. 지울 파일: `tools/check-seo.mjs`, `tools/content-dates.mjs`, `tools/update-content-dates.mjs`, `tools/app-fingerprint.mjs`, `tools/check-i18n.mjs`,
@@ -111,6 +112,9 @@ NC `eb2bd8c`, DWG `eea2fcf`)과 같은 입력에서 같은 dist(HTML·언어 페
   import { defaultPrecacheable as precacheable, serviceWorkerValues } from 'opencad-site-kit/pwa/sw-plugin';
   const precacheUrls = (files: string[]) => serviceWorkerValues(files, () => '').precache;
   ```
+- `.github/workflows/mobile-validation.yml`과 성능 도구 두 파일: SKP와 같이(아래). 성능 예산 검사는 v0.1.2까지는 앱의 `tools/check-performance-budget.mjs`를 그대로 쓰고
+  (설명의 출처 이름만 `opencad-site performance-summary`로), v0.1.3으로 올리면 `node_modules/.bin/opencad-site check-performance-budget .runtime/performance tools/performance-budget.json`으로 바꾸고 앱 파일을 지웁니다.
+- 구조 표의 `src/app/pwa.ts`·`tools/sw-plugin.mjs` 줄과 README의 휴대폰 검사 설명(성능 도구 두 파일)을 고칩니다.
 
 ### opencad-skp
 
@@ -307,7 +311,9 @@ dist는 앱 저장소의 `.runtime/`(git 무시)에 둡니다.
    `.github/workflows/mobile-validation.yml`이 있는 앱은 기준 커밋을 빌드한 뒤 이 커밋으로 돌아와 `npm ci`를 다시 하고(기준 커밋에는 도구가 없을 수 있다)
    성능 명령을 `node_modules/.bin/opencad-site serve-performance …`·`performance-summary …`로 부릅니다.
 
-## NC 적용 기록(opencad-nc, 2026-10-27)
+## 적용 기록
+
+### opencad-nc(2026-10-27, 도구 v0.1.1)
 
 | 단계 | compare-dist(적용 전 6601bba의 dist와) | 확인 |
 |---|---|---|
@@ -315,9 +321,23 @@ dist는 앱 저장소의 `.runtime/`(git 무시)에 둡니다.
 | 2단계 번역기·언어 메뉴·PWA 연결·방문 통계·확인 명령 | 같음 24, 자산 이름만 5(다섯 언어 페이지), 바뀜 3: `assets/index-*.js`(321,602 → 322,132바이트)·`.map`, `sw.js` 판 이름 두 줄 | 사전 덩어리·해석 워커·CSS·앱 정보·sitemap 같음. vitest 434·tsc·test:i18n·check:i18n·test:seo, 헤드리스(ja·ko 1280px, de 375px, 오프라인·공유 받기·새 판 알림) 통과 |
 | 내용 수정일 갱신 뒤 | 위에 더해 다섯 페이지의 `dateModified`와 `sitemap.xml`의 `lastmod` | `npm run build`(check:seo·check:i18n)·test:seo 통과 |
 
+### opencad-step(2026-10-27, 도구 v0.1.2)
+
+| 단계 | compare-dist(적용 전 8a01519의 dist와) | 확인 |
+|---|---|---|
+| 1단계 빌드 플러그인 | 같음 34 | vitest 302·tsc·`npm run build`(앱 확인 명령)·test:seo 통과 |
+| 2단계 번역기·언어 메뉴·PWA 연결·방문 통계·확인 명령 | 같음 26, 자산 이름만 5, 바뀜 3: `assets/index-*.js`(395,750 → 396,569바이트)·`.map`, `sw.js` 판 이름 두 줄 | 해석 워커·사전·CSS·앱 정보·sitemap 같음. vitest 286·tsc·test:i18n·check:i18n·test:seo, 헤드리스(ja·ko 1280px, de 375px, 공유 받기·오프라인·최근 문서·예제·새 판 알림) 통과 |
+| PMI 한글 그리기 | 예제의 글 주석을 한글(모따기)로 바꾼 파일: PMI 선분 162개(영문 그대로 131개), 좌표 합이 적용 전 dist와 같음 | 해석 워커의 기기 글꼴 윤곽선 그리기는 그대로 |
+| 내용 수정일 갱신 뒤 | 위에 더해 다섯 페이지의 `dateModified`와 `sitemap.xml`의 `lastmod` | `npm run build`·test:seo 통과 |
+
+STEP의 `src/app/pwa.ts`에는 "등록 결과가 없으면 null" 고침이 없었습니다(NC·도구 v0.1.1에는 있음) — 적용하면서 함께 고쳐집니다.
+
 다음 앱에서 볼 것:
-- STEP·SKP도 `tests/`가 `tools/sw-plugin.mjs`·`tools/site-metadata.mjs`·`tools/localization-plugin.mjs`를 가져오는지 먼저 찾아(`git grep -n "tools/"`) 1단계에서 함께 고칩니다.
+- 1단계 전에 `git grep -n "tools/"`로 `tools/sw-plugin.mjs`·`tools/site-metadata.mjs`·`tools/localization-plugin.mjs`를 가져오는 시험·문서를 찾아 둡니다
+  (시험은 1단계에서, 소스의 주석은 소스 맵 때문에 2단계에서 고칩니다). STEP·NC는 `tests/sw.test.ts` 하나였습니다.
+- 휴대폰 검사 워크플로가 있는 앱은 `.github/workflows/mobile-validation.yml`의 기준 빌드 뒤 `npm ci`를 다시 넣습니다(NC·STEP 모두 했습니다).
+  SKP·DWG에도 `tools/check-performance-budget.mjs`가 생겼으면 v0.1.3의 명령으로 바꿉니다.
 - SKP는 `src/app/main.ts`의 `consumeLaunchFiles((file) => …)`를 파일 배열로, 시험의 `consumeLaunchFiles(open, w)`를 `(open, undefined, w)`로.
   SKP 원본은 첫 설치 때(`clients.claim`) 페이지를 한 번 다시 읽었습니다 — 바뀌는 동작이니 헤드리스로 첫 방문이 다시 읽지 않는지 봅니다.
 - DWG는 `src/app/pwa.ts`를 다시 내보내기로 두면 `pwa-app.ts`·시험을 거의 그대로 둘 수 있습니다. `tests/webapp-manifest.test.ts`의 `localizeHtml`에 `site`를 넘깁니다.
-- 번역기 결과는 STEP·SKP·NC에서 같고 DWG에서만 여러 줄·이은 문장이 달라집니다(4절). DWG는 2단계 뒤 다섯 언어 페이지의 정적 소개가 그대로인지(`check:i18n`) 꼭 봅니다.
+- 번역기 결과는 STEP·SKP·NC에서 같고(STEP·NC는 실제 적용에서도 언어 페이지 바이트가 같았습니다) DWG에서만 여러 줄·이은 문장이 달라집니다(4절). DWG는 2단계 뒤 다섯 언어 페이지의 정적 소개가 그대로인지(`check:i18n`) 꼭 봅니다.

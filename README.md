@@ -23,7 +23,7 @@ OpenCAD 앱(STEP·SKP·NC·DWG·DXF)이 함께 쓰는 사이트 계층 도구입
 | `opencad-site-kit/pwa/sw-plugin` | Vite 플러그인 `serviceWorker(options)`: 빌드 끝에 `dist/sw.js`. 미리 담을 목록과 판 이름(내용 지문)을 정하고 워커 본문은 앱이 줍니다(`templateSource(파일)` 또는 함수) |
 | `opencad-site-kit/pwa/client` | 서비스 워커 등록과 새 판 알림, 데스크톱 파일 열기(launchQueue), 공유 받기 주소 인자(브라우저, TypeScript) |
 | `opencad-site-kit/analytics`, `opencad-site-kit/analytics/config` | 방문 통계(GA4, 고르기 전에는 아무것도 보내지 않음)와 측정 ID(브라우저, TypeScript) |
-| `opencad-site-kit/perf/*` | 모바일 성능 비교(압축해서 주는 미리 보기 서버, Lighthouse 결과 가운데값 표) |
+| `opencad-site-kit/perf/*` | 모바일 성능 비교(압축해서 주는 미리 보기 서버, Lighthouse 결과 가운데값 표, 앱 예산 파일과 견주는 성능 예산 검사) |
 | `opencad-site` 명령 | 앱 npm 스크립트가 부르는 명령(아래) |
 
 서비스 워커 본문(최근 문서 저장소 꼴·공유 받기 흐름)은 앱마다 달라 이 도구에 넣지 않았습니다. 앱 화면 쪽(최근 문서·테마·단축키 등)도 아직 앱에 있습니다.
@@ -35,7 +35,7 @@ npm에 올리지 않고 GitHub 의존으로 씁니다. 빌드 때만 쓰므로 `
 
 ```json
 "devDependencies": {
-  "opencad-site-kit": "github:GyuTae-Kim/opencad-site-kit#v0.1.2"
+  "opencad-site-kit": "github:GyuTae-Kim/opencad-site-kit#v0.1.3"
 },
 "scripts": {
   "build": "tsc --noEmit && vite build && npm run check:seo && npm run check:i18n",
@@ -120,6 +120,7 @@ consumeLaunchFiles((files) => openFiles(files));
 | `opencad-site test-seo` | 사이트 설정이 검색·공유·앱 설명과 날짜를 모두 채우는지(node:test) |
 | `opencad-site compare-dist <전> <후> [--fail-on-change]` | 두 빌드 결과 견주기 |
 | `opencad-site serve-performance <폴더> <포트>`, `opencad-site performance-summary <폴더>` | 모바일 성능 비교(CI) |
+| `opencad-site check-performance-budget <폴더> [예산.json]` | 후보 가운데값(`comparison.json`)이 예산(기본 `tools/performance-budget.json` — `{ budget: { performance: { min }, fcp: { max }, … } }`)을 넘는지. 표를 찍고 넘으면 1로 끝납니다 |
 
 ## 판 올리기
 
