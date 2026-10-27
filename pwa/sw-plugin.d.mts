@@ -22,10 +22,20 @@ export interface ServiceWorkerValues {
 }
 export interface ValueOptions {
   precache?: Precache;
-  lazy?: ReadonlySet<string>;
+  /** 쓸 때만 받는 덩어리 이름 모음. 규칙 꼴(serviceWorker 설정의 lazy)을 주면 빌드 결과가 없어 빈 모음으로 친다 */
+  lazy?: ReadonlySet<string> | LazyRules | null;
   sortUrls?: boolean;
   staticDirs?: string[];
   version?: VersionScheme;
+  /** serviceWorker 설정을 그대로 넘길 수 있게 받기만 한다(쓰지 않는다) */
+  source?: (values: ServiceWorkerValues) => string;
+}
+/** serviceWorker()의 설정(앱의 tools/site.mjs가 offline으로 내보내는 꼴) — serviceWorkerValues에도 그대로 넘길 수 있다 */
+export interface ServiceWorkerOptions extends Omit<ValueOptions, 'lazy' | 'source'> {
+  /** 워커 원본을 돌려주는 함수(templateSource(파일)도 된다) */
+  source: (values: ServiceWorkerValues) => string;
+  /** 쓸 때만 받는 덩어리를 가리는 규칙(lazyFiles) */
+  lazy?: LazyRules | null;
 }
 export interface BundleItem { type: 'chunk' | 'asset'; fileName: string; facadeModuleId?: string | null; moduleIds?: string[]; modules?: Record<string, unknown>; originalFileNames?: string[]; originalFileName?: string | null }
 
@@ -37,4 +47,4 @@ export function lazyFiles(bundle: Record<string, BundleItem>, rules?: LazyRules)
 export function serviceWorkerValues(files: string[], read: (file: string) => string | Uint8Array, options?: ValueOptions): ServiceWorkerValues;
 export function fillTemplate(template: string, values: { version: string; staticVersion?: string | null; precache: string[]; assets?: string[] }): string;
 export function templateSource(template: string | URL): (values: ServiceWorkerValues) => string;
-export function serviceWorker(options: Omit<ValueOptions, 'lazy'> & { source: (values: ServiceWorkerValues) => string; lazy?: LazyRules | null }): Plugin;
+export function serviceWorker(options: ServiceWorkerOptions): Plugin;

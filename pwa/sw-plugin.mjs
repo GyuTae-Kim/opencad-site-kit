@@ -79,9 +79,13 @@ export function lazyFiles(bundle, { facade = [], modules = [], assetOrigins = []
  * - sortUrls: 미리 담을 목록을 파일 경로 차례 대신 주소 차례로
  * - staticDirs: 따로 판(staticVersion)을 매기는 큰 정적 파일 폴더(예: 'fonts/'). 처음 설치 때 담지 않고(워커가 쓸 때 담는다),
  *   바뀌지 않으면 배포가 바뀌어도 담아 둔 것을 지우지 않게
+ * - lazy: 쓸 때만 받는 덩어리 이름 모음(Set)
+ * serviceWorker()에 주는 설정을 그대로 넘겨도 된다(앱 시험이 tools/site.mjs의 설정을 골라 넘기지 않게): source는 쓰지 않고,
+ * 규칙 꼴 lazy(lazyFiles 규칙 — 빌드 결과가 있어야 가린다)는 빈 모음으로 친다. 모음을 따로 주려면 { ...설정, lazy: 모음 }.
  * 돌려주는 값: version, staticVersion(staticDirs가 없으면 null), precache(주소 목록), assets(assets/의 스크립트·스타일 전부), files(미리 담는 파일 경로)
  */
-export function serviceWorkerValues(files, read, { precache = defaultPrecacheable, lazy = new Set(), sortUrls = false, staticDirs = [], version = DEFAULT_VERSION } = {}) {
+export function serviceWorkerValues(files, read, { precache = defaultPrecacheable, lazy: lazyOption = null, sortUrls = false, staticDirs = [], version = DEFAULT_VERSION } = {}) {
+  const lazy = lazyOption && typeof lazyOption.has === 'function' ? lazyOption : new Set();
   const isStatic = (file) => staticDirs.some((dir) => file.startsWith(dir));
   const entries = files.filter((file) => !isStatic(file) && precache(file, { lazy })).map((file) => ({ file, url: pageUrl(file) }));
   if (sortUrls) entries.sort((a, b) => (a.url < b.url ? -1 : a.url > b.url ? 1 : 0));

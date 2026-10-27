@@ -5,7 +5,7 @@
 import { siteLocalization } from 'opencad-site-kit/i18n/localization-plugin';
 import { defineSite } from 'opencad-site-kit/seo/site-metadata';
 import { siteMetadata } from 'opencad-site-kit/seo/site-plugin';
-import { serviceWorker, templateSource, type Precache } from 'opencad-site-kit/pwa/sw-plugin';
+import { serviceWorker, serviceWorkerValues, templateSource, type Precache, type ServiceWorkerOptions } from 'opencad-site-kit/pwa/sw-plugin';
 import type { Plugin } from 'vite';
 import metadata from './site/metadata.json' with { type: 'json' };
 import history from './site/content-history.json' with { type: 'json' };
@@ -23,3 +23,8 @@ export const plugins: Plugin[] = [
   serviceWorker({ source: ({ version, precache: urls }) => legacySource({ version, urls }), version: { length: 12, separator: '', terminator: '' } }),
   serviceWorker({ source: templateSource(new URL('./tools/sw-template.js', import.meta.url)), precache, sortUrls: true, staticDirs: ['fonts/'], lazy: { modules: [/pdfjs-dist/] } }),
 ];
+
+// 앱 tools/site.mjs의 offline 설정 꼴: 플러그인과 시험(serviceWorkerValues)에 그대로 넘긴다
+export const offline: ServiceWorkerOptions = { source: templateSource(new URL('./tools/sw-template.js', import.meta.url)), precache, sortUrls: true, lazy: { modules: [/pdfjs-dist/] } };
+export const values = serviceWorkerValues(['index.html'], () => '', offline);
+export const withLazy = serviceWorkerValues(['index.html'], () => '', { ...offline, lazy: new Set(['assets/a.js']) });
