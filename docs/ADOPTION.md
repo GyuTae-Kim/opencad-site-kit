@@ -1,6 +1,7 @@
 # 네 앱에 적용하기
 
-opencad-step·opencad-skp·opencad-nc·opencad-dwgdxf가 저장소마다 복사해 쓰던 사이트 계층 파일을 이 도구(`opencad-site-kit#v0.1.1`)로 바꾸는 안내입니다.
+opencad-step·opencad-skp·opencad-nc·opencad-dwgdxf가 저장소마다 복사해 쓰던 사이트 계층 파일을 이 도구(`opencad-site-kit#v0.1.2`)로 바꾸는 안내입니다.
+opencad-nc가 처음 적용했습니다(6601bba → 아래 "NC 적용 기록"). 다른 앱도 같은 순서로 하면 됩니다.
 아래 설정은 갈래 비교 시험(`test/variants/configs.ts`)과 같은 값이고, 그 시험이 각 앱 원본(기준 커밋 — STEP `4d3dd50`, SKP `424a666`,
 NC `eb2bd8c`, DWG `eea2fcf`)과 같은 입력에서 같은 dist(HTML·언어 페이지·앱 정보·sitemap·sw.js)가 나오는 것을 확인했습니다.
 
@@ -18,15 +19,15 @@ NC `eb2bd8c`, DWG `eea2fcf`)과 같은 입력에서 같은 dist(HTML·언어 페
 | tools/seo.test.mjs | STEP·SKP·NC / DWG | DWG에 지문 시험 없음 | 지문·날짜 시험은 이 저장소로, 앱은 `opencad-site test-seo`(설정 확인) |
 | tools/sw-plugin.mjs(+.d.mts) | 넷 다 다름 | 워커 본문(STEP·NC는 함수, SKP·DWG는 틀 파일), 미리 담을 규칙, 판 이름 짓기(12/16자리, 구분자, 이름=경로/주소), 목록 차례, DWG의 쓸 때만 받는 덩어리·정적 폴더 판 | `serviceWorker(options)` — 다른 점은 모두 설정. 워커 본문은 앱에 남김 |
 | tools/sw-template.js | SKP / DWG | 최근 문서 저장소 꼴·캐시 방식이 다름 | 앱에 남김(SKP는 자리 이름 하나만 바꿈) |
-| tools/performance-summary.mjs, serve-performance.mjs | SKP·DWG 같음 | — | `opencad-site performance-summary`·`serve-performance` |
+| tools/performance-summary.mjs, serve-performance.mjs | SKP·NC·DWG 같음(NC는 6601bba에서 더함) | — | `opencad-site performance-summary`·`serve-performance` |
 | src/app/analytics.ts | STEP / SKP·DWG / NC | 내보내기 형식에 STEP의 stl·obj·csv, 여는 형식에 NC의 pgi·xml | 합집합 |
-| src/app/pwa.ts | 넷 다 다름 | 부르는 꼴, 첫 설치 다시 읽기, 같은 워커 두 번 알림, 앱으로 돌아올 때 새 판 확인(STEP·NC만), 파일 여러 개 넘기기(NC·DWG) | DWG 꼴 + `onVisible` 선택 |
+| src/app/pwa.ts | 넷 다 다름 | 부르는 꼴, 첫 설치 다시 읽기, 같은 워커 두 번 알림, 앱으로 돌아올 때 새 판 확인(STEP·NC만), 파일 여러 개 넘기기(NC·DWG). NC 6601bba는 등록 결과가 없으면 `null`(도구 v0.1.1과 같은 고침) | DWG 꼴 + `onVisible` 선택 |
 
 ## 2. 모든 앱에 공통으로
 
 1. `package.json`
    ```json
-   "dependencies": { "opencad-site-kit": "github:GyuTae-Kim/opencad-site-kit#v0.1.1" },
+   "devDependencies": { "opencad-site-kit": "github:GyuTae-Kim/opencad-site-kit#v0.1.2" },
    "scripts": {
      "check:seo": "opencad-site check-seo",
      "test:seo": "opencad-site test-seo",
@@ -34,7 +35,9 @@ NC `eb2bd8c`, DWG `eea2fcf`)과 같은 입력에서 같은 dist(HTML·언어 페
      "check:i18n": "opencad-site check-i18n"
    }
    ```
-   `build`·`test:i18n` 등 다른 스크립트는 그대로입니다. `npm install`로 잠금 파일을 갱신합니다.
+   `build`·`test:i18n` 등 다른 스크립트는 그대로입니다. `npm install -D "opencad-site-kit@github:GyuTae-Kim/opencad-site-kit#v0.1.2"`로
+   받아 잠금 파일에 그 태그의 커밋이 적히게 합니다. 빌드 때만 쓰므로 `devDependencies`에 둡니다 — `dependencies`에 두면 이 도구의 선택 peer(`vite`·`jsdom`)
+   때문에 npm이 vite·jsdom과 그 의존 수십 개의 `"dev": true`를 `"devOptional"`로 바꿔 잠금 파일이 200줄 넘게 바뀝니다.
 2. 지울 파일: `tools/check-seo.mjs`, `tools/content-dates.mjs`, `tools/update-content-dates.mjs`, `tools/app-fingerprint.mjs`, `tools/check-i18n.mjs`,
    `tools/seo.test.mjs`, `tools/site-metadata.mjs`·`.d.mts`, `tools/localization-plugin.mjs`·`.d.mts`, `tools/site-plugin.mjs`·`.d.mts`(DWG는 없음),
    `src/app/language-menu.ts`, `src/app/analytics.ts`, `src/app/analytics-config.ts`, `tests/app/analytics.test.ts`(같은 시험이 이 저장소에 있습니다)
@@ -193,7 +196,12 @@ NC `eb2bd8c`, DWG `eea2fcf`)과 같은 입력에서 같은 dist(HTML·언어 페
   const manifestFor = (language = 'ko') => site.webManifest(language);   // 예전 manifestFor(language, NC_EXTENSIONS)
   const contentVersion = (files: { name: string; content: string }[]) => fingerprint(files.map((f) => ({ file: f.name, url: f.name })), (name) => files.find((f) => f.name === name)!.content, offline.version);
   ```
-- `tests/app/pwa.test.ts`: `registerServiceWorker(onUpdate, env)`·`consumeLaunchQueue` 시험은 이 저장소로 옮겼으니 지우고, 나머지는 그대로 둡니다.
+  `en`처럼 형을 좁혀 쓰는 곳은 `site.webManifest('en') as unknown as …`(앱 정보 형 `WebManifest`에는 `share_target`이 없다).
+- `tests/app/pwa.test.ts`: 등록·launchQueue 시험을 도구의 꼴로 바꿉니다 —
+  `registerServiceWorker(onUpdate, { sw, base, reload, onVisible })` → `registerServiceWorker(sw, new URL('sw.js', base), onUpdate, reload, { onVisible })`,
+  `consumeLaunchQueue(open, host)` → `consumeLaunchFiles(open, undefined, host)`. "시험 환경 기본값은 등록하지 않는다"는 앱이 `import.meta.env.DEV`로 거르므로 뺍니다.
+- `.github/workflows/mobile-validation.yml`과 성능 도구 두 파일: SKP와 같이(아래).
+- 주석의 `tools/sw-plugin.mjs`(`src/app/recent.ts` 등)는 2단계에서 고칩니다 — 1단계에서 고치면 소스 맵(`sourcesContent`)이 달라져 바이트 비교가 깨집니다.
 
 ### opencad-dwgdxf
 
@@ -268,8 +276,10 @@ NC `eb2bd8c`, DWG `eea2fcf`)과 같은 입력에서 같은 dist(HTML·언어 페
 dist는 앱 저장소의 `.runtime/`(git 무시)에 둡니다.
 
 1. 적용 전(기준 커밋): `npm ci && npx vite build && mv dist .runtime/dist-before`
-2. **1단계 — 도구만(커밋하지 않는 확인)**: 2·3절 가운데 Node 쪽만 바꿉니다 — `package.json` 의존, `tools/site.mjs`·`vite.config.ts`, 앱이 갖는 워커 본문.
-   이때 `site/i18n-core.mjs`와 `src/app/` 모듈은 그대로 두고, `tools/site.mjs`의 `import '../site/i18n.mjs';` 대신 공용 번역기에 사전을 직접 넣습니다.
+2. **1단계 — 빌드 플러그인만(커밋할 수 있다)**: 2·3절 가운데 Vite 플러그인 쪽만 바꿉니다 — `package.json` 의존, `tools/site.mjs`·`vite.config.ts`,
+   앱이 갖는 워커 본문, 지우는 것은 `tools/localization-plugin.*`·`tools/site-plugin.*`·`tools/sw-plugin.*`뿐, 그 파일을 가져오던 시험의 import.
+   이때 `site/i18n-core.mjs`, `src/app/` 모듈, 확인 명령(`tools/check-*.mjs`·`tools/site-metadata.mjs` 등 — 앱의 번역기를 쓴다)은 그대로 두고,
+   `tools/site.mjs`의 `import '../site/i18n.mjs';` 대신 공용 번역기에 사전을 직접 넣습니다.
    ```js
    import { registerCatalog } from 'opencad-site-kit/i18n/core';
    import en from '../site/locales/en.json' with { type: 'json' };
@@ -278,16 +288,36 @@ dist는 앱 저장소의 `.runtime/`(git 무시)에 둡니다.
    import de from '../site/locales/de.json' with { type: 'json' };
    for (const [language, content] of Object.entries({ en, ja, 'zh-CN': zh, de })) registerCatalog(language, content);
    ```
-   `npm install && npx vite build && npx opencad-site compare-dist .runtime/dist-before dist --fail-on-change` — **모든 파일이 `same`(바이트까지 같음)이어야 합니다.**
+   `npx vite build && npx opencad-site compare-dist .runtime/dist-before dist --fail-on-change` — **모든 파일이 `same`(바이트까지 같음)이어야 합니다.**
+   그다음 `npm test`·`npm run build`(앱의 확인 명령 그대로)·`npm run test:seo`가 통과하면 이 단계를 커밋합니다(dist가 같으니 내용 수정일은 그대로).
+   (`compare-dist`는 v0.1.2부터 씁니다. v0.1.1은 수백 KB짜리 한 줄 묶음에서 처음 다른 글자를 찾느라 멈춥니다.)
    브라우저 묶음은 그대로이고, 언어 페이지·앱 정보·사이트맵·sw.js를 만드는 도구만 바뀌었기 때문입니다(이 저장소의 갈래 비교 시험이 같은 것을 합성 입구로 확인했습니다).
    다르면: 앱 정보 파일 경로(`manifest.source`), 워커 설정(`offline`의 `version`·`sortUrls`·`precache`), SKP 틀의 자리 이름, 워커 본문 글을 봅니다.
-3. **2단계 — 나머지**: `tools/site.mjs`를 3절 그대로(`import '../site/i18n.mjs';`)로 되돌리고 `site/i18n-core.mjs`·`src/app/` 쪽과 시험을 바꿉니다.
+3. **2단계 — 나머지**: `tools/site.mjs`를 3절 그대로(`import '../site/i18n.mjs';`)로 되돌리고 `site/i18n-core.mjs`·`src/app/` 쪽, 확인 명령(`package.json` 스크립트)과 시험을 바꾸고 남은 복사본을 지웁니다.
    `npx vite build && npx opencad-site compare-dist .runtime/dist-before dist`에서 기대하는 차이는 이것뿐입니다.
    - `assets/*.js`(·`.map`) 가운데 공용 번역기·PWA 연결·방문 통계가 든 묶음: `changed`(4절의 코드 차이 — 번역기의 `configureI18n`·기억 열쇠·DWG 밖 갈래의 `uiParameters`,
      DWG의 여러 줄·이은 문장 고침, PWA 연결, 형식 목록)
    - `index.html`·`<언어>/index.html`: `same-but-asset-names`(스크립트 이름의 내용 지문만)
-   - `sw.js`: 판 이름 한 줄만 `changed`(미리 담을 목록은 이름 지문만 다르다)
+   - `sw.js`: 판 이름이 든 줄만 `changed`(판 이름을 캐시 이름에도 쓰는 앱은 두 줄 — 미리 담을 목록은 이름 지문만 다르다)
    - 앱 정보·사이트맵·`.nojekyll`·그림·글꼴: `same`
    이 밖에 `changed`가 있으면 원인을 적고 고칩니다.
 4. 마무리: `npm run typecheck && npm test && npm run test:seo`, 마지막에 `npm run update:content-dates -- --at $(date -u +%Y-%m-%dT%H:%M:%SZ)`
    → `npm run build`(안에서 `check:seo`·`check:i18n`) → `git status`. 2단계에서 JS가 바뀌므로 내용 수정일이 올라갑니다.
+5. 헤드리스 Chrome으로 넓은 화면·375px에서 언어 페이지 둘, 첫 방문 서비스 워커·오프라인 다시 열기·새 판 알림과 새로 고침을 봅니다.
+   `.github/workflows/mobile-validation.yml`이 있는 앱은 기준 커밋을 빌드한 뒤 이 커밋으로 돌아와 `npm ci`를 다시 하고(기준 커밋에는 도구가 없을 수 있다)
+   성능 명령을 `node_modules/.bin/opencad-site serve-performance …`·`performance-summary …`로 부릅니다.
+
+## NC 적용 기록(opencad-nc, 2026-10-27)
+
+| 단계 | compare-dist(적용 전 6601bba의 dist와) | 확인 |
+|---|---|---|
+| 1단계 빌드 플러그인 | 같음 32 | vitest 450·tsc·`npm run build`(앱 확인 명령)·test:seo 통과 |
+| 2단계 번역기·언어 메뉴·PWA 연결·방문 통계·확인 명령 | 같음 24, 자산 이름만 5(다섯 언어 페이지), 바뀜 3: `assets/index-*.js`(321,602 → 322,132바이트)·`.map`, `sw.js` 판 이름 두 줄 | 사전 덩어리·해석 워커·CSS·앱 정보·sitemap 같음. vitest 434·tsc·test:i18n·check:i18n·test:seo, 헤드리스(ja·ko 1280px, de 375px, 오프라인·공유 받기·새 판 알림) 통과 |
+| 내용 수정일 갱신 뒤 | 위에 더해 다섯 페이지의 `dateModified`와 `sitemap.xml`의 `lastmod` | `npm run build`(check:seo·check:i18n)·test:seo 통과 |
+
+다음 앱에서 볼 것:
+- STEP·SKP도 `tests/`가 `tools/sw-plugin.mjs`·`tools/site-metadata.mjs`·`tools/localization-plugin.mjs`를 가져오는지 먼저 찾아(`git grep -n "tools/"`) 1단계에서 함께 고칩니다.
+- SKP는 `src/app/main.ts`의 `consumeLaunchFiles((file) => …)`를 파일 배열로, 시험의 `consumeLaunchFiles(open, w)`를 `(open, undefined, w)`로.
+  SKP 원본은 첫 설치 때(`clients.claim`) 페이지를 한 번 다시 읽었습니다 — 바뀌는 동작이니 헤드리스로 첫 방문이 다시 읽지 않는지 봅니다.
+- DWG는 `src/app/pwa.ts`를 다시 내보내기로 두면 `pwa-app.ts`·시험을 거의 그대로 둘 수 있습니다. `tests/webapp-manifest.test.ts`의 `localizeHtml`에 `site`를 넘깁니다.
+- 번역기 결과는 STEP·SKP·NC에서 같고 DWG에서만 여러 줄·이은 문장이 달라집니다(4절). DWG는 2단계 뒤 다섯 언어 페이지의 정적 소개가 그대로인지(`check:i18n`) 꼭 봅니다.
