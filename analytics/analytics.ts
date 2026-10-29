@@ -23,6 +23,14 @@ let pageReferrer = '';
 let lastPage = '';
 let pageReady = false;
 
+/** Only published app entry paths may become page identities. */
+function publicAppPath(tool: AnalyticsTool, pathname: string): string {
+  const root = PATHS[tool];
+  if (!pathname.startsWith(root)) return root;
+  const language = pathname.slice(root.length).match(/^(en|ja|zh-CN|de)(?:\/(?:index\.html)?)?$/)?.[1];
+  return language ? `${root}${language}/` : root;
+}
+
 /** Keep campaign slugs, excluding user-supplied file/URL parameters and fragments. */
 export function campaignQuery(search: string): string {
   const out = new URLSearchParams();
@@ -39,7 +47,8 @@ function referrer(): string {
 }
 
 function fields(): Record<string, string> {
-  return { tool: active!.tool, page_title: pageTitle, content_group: pageGroup, page_location: `https://${HOST}${pagePath}${consent === 'granted' ? campaignQuery(location.search) : ''}`, page_referrer: consent === 'granted' ? pageReferrer : '' };
+  const pageLanguage = pagePath.match(/^\/(?:opencad-(?:dwgdxf|nc|step|skp)\/)?(en|ja|zh-CN|de)(?:\/|$)/)?.[1] ?? 'ko';
+  return { tool: active!.tool, page_title: pageTitle, content_group: pageGroup, page_language: pageLanguage, page_location: `https://${HOST}${pagePath}${consent === 'granted' ? campaignQuery(location.search) : ''}`, page_referrer: consent === 'granted' ? pageReferrer : '' };
 }
 
 function send(name: string, params: Record<string, string | number> = {}): void {
@@ -150,7 +159,7 @@ function initialize(id: string, tool: AnalyticsTool): void {
   const nav = navigator as Navigator & { globalPrivacyControl?: boolean };
   if (nav.globalPrivacyControl || nav.doNotTrack === '1') return;
   active = { id, tool };
-  pagePath = PATHS[tool]; pageTitle = TITLES[tool];
+  pagePath = publicAppPath(tool, location.pathname); pageTitle = TITLES[tool];
   pageGroup = tool === 'portfolio' ? '포트폴리오' : 'OpenCAD 앱';
   pageReferrer = referrer();
   pageReady = tool !== 'portfolio';
@@ -158,6 +167,18 @@ function initialize(id: string, tool: AnalyticsTool): void {
   window.addEventListener('storage', (event) => {
     if (event.key === CONSENT_KEY || event.key === null) choose(event.key === null ? null : storedConsent(event.newValue), false);
   });
+  // App localization replaces the URL and emits a non-bubbling event at #app.
+  // Capture it without changing each consumer or trusting event detail as data.
+  document.addEventListener('languagechange', () => {
+    if (!active || active.tool === 'portfolio') return;
+    const nextPath = publicAppPath(active.tool, location.pathname);
+    if (nextPath === pagePath) return;
+    // Until the first recorded visit, retain the original external referrer.
+    // A pre-consent language change must not turn organic traffic into direct.
+    if (lastPage) pageReferrer = `https://${HOST}${lastPage}`;
+    pagePath = nextPath;
+    pageView();
+  }, true);
   document.addEventListener('click', (event) => {
     const link = (event.target instanceof Element ? event.target.closest('a[href]') : null) as HTMLAnchorElement | null;
     if (!link) return;

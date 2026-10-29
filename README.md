@@ -35,7 +35,7 @@ npm에 올리지 않고 GitHub 의존으로 씁니다. 빌드 때만 쓰므로 `
 
 ```json
 "devDependencies": {
-  "opencad-site-kit": "github:GyuTae-Kim/opencad-site-kit#v0.1.4"
+  "opencad-site-kit": "github:GyuTae-Kim/opencad-site-kit#v0.1.5"
 },
 "scripts": {
   "build": "tsc --noEmit && vite build && npm run check:seo && npm run check:i18n",
@@ -110,6 +110,8 @@ consumeLaunchFiles((files) => openFiles(files));
 ```
 
 네 앱에 처음 적용하는 순서와 앱마다 바꿀 것은 [docs/ADOPTION.md](docs/ADOPTION.md)에 있습니다.
+
+방문 통계의 `page_location`은 `/opencad-step/de/`처럼 앱의 실제 언어별 정식 주소를 보존하고, `page_language`는 `ko`·`en`·`ja`·`zh-CN`·`de` 중 하나로 기록합니다. 페이지 조회와 파일 열기·내보내기 이벤트에 같은 언어 문맥을 사용합니다. 기존 앱이 URL 갱신 뒤 보내는 `languagechange` 이벤트도 캡처해 언어를 전환할 때 새 조회를 한 번 기록합니다. 알려진 언어 진입 주소만 허용하며 파일명·임의 하위 경로·파일 URL·fragment를 보내지 않습니다. 허용된 캠페인 값은 기존처럼 분석 동의 시에만 전송합니다. 이전 판에서 기본 주소에 합쳐진 GA 이력은 소급 복원할 수 없습니다.
 
 ## 명령
 
