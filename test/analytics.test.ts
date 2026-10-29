@@ -1,11 +1,12 @@
 // @vitest-environment jsdom
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 type TaggedWindow = Window & { dataLayer?: unknown[]; gtag?: (...args: unknown[]) => void };
 const tagged = window as TaggedWindow;
 const commands = (): unknown[][] => (tagged.dataLayer ?? []).map((entry) => Array.from(entry as ArrayLike<unknown>));
 const events = (): unknown[][] => commands().filter((entry) => entry[0] === 'event');
 const click = (text: string): void => [...document.querySelectorAll('button')].find((button) => button.textContent === text)!.click();
+const registrations: { target: EventTarget; type: string; listener: EventListenerOrEventListenerObject | null; options?: AddEventListenerOptions | boolean }[] = [];
 
 beforeEach(() => {
   vi.resetModules();
@@ -18,9 +19,119 @@ beforeEach(() => {
   vi.stubGlobal('location', new URL('https://gyutae-kim.github.io/opencad-skp/?open=customer-secret.skp&utm_source=github&utm_medium=referral#private'));
   Object.defineProperty(navigator, 'doNotTrack', { value: '0', configurable: true });
   Object.defineProperty(navigator, 'globalPrivacyControl', { value: false, configurable: true });
+  for (const target of [window, document] as EventTarget[]) {
+    const add = target.addEventListener.bind(target);
+    vi.spyOn(target, 'addEventListener').mockImplementation((type, listener, options) => {
+      if (['storage', 'click', 'languagechange'].includes(type)) registrations.push({ target, type, listener, options });
+      add(type, listener, options);
+    });
+  }
+});
+
+afterEach(() => {
+  for (const { target, type, listener, options } of registrations) target.removeEventListener(type, listener, options);
+  registrations.length = 0;
+  vi.restoreAllMocks();
 });
 
 describe('GA4 collection boundary', () => {
+  it.each(['granted', 'limited'])('refreshes app language after its non-bubbling event in %s mode', async consent => {
+    const root = document.createElement('div'); document.body.append(root);
+    vi.stubGlobal('location', new URL('https://gyutae-kim.github.io/opencad-step/en/?open=private.step#secret'));
+    localStorage.setItem('opencad.analytics-consent.v1', consent);
+    const ga = await import('../analytics/analytics');
+    ga.initAnalytics('G-TEST123', 'step');
+    root.dispatchEvent(new CustomEvent('languagechange', { detail: 'untrusted-private-detail' }));
+    expect(events()).toHaveLength(1);
+    vi.stubGlobal('location', new URL('https://gyutae-kim.github.io/opencad-step/de/?open=private.step#secret'));
+    root.dispatchEvent(new CustomEvent('languagechange', { detail: 'untrusted-private-detail' }));
+    root.dispatchEvent(new CustomEvent('languagechange', { detail: 'untrusted-private-detail' }));
+    expect(events()).toHaveLength(2);
+    expect(events()[1]![2]).toMatchObject({ page_location: 'https://gyutae-kim.github.io/opencad-step/de/', page_language: 'de', page_referrer: consent === 'granted' ? 'https://gyutae-kim.github.io/opencad-step/en/' : '' });
+    ga.beginOpen('local', 'step').success(); ga.trackExport('png');
+    expect(events()).toHaveLength(consent === 'granted' ? 5 : 2);
+    expect(events().slice(1).every(entry => (entry[2] as Record<string, string>).page_language === 'de')).toBe(true);
+    expect(commands().filter(entry => entry[0] === 'config')).toHaveLength(1);
+    expect(JSON.stringify(commands())).not.toMatch(/private\.step|#secret|open=|untrusted-private-detail/);
+  });
+
+  it('uses the current app language when consent is chosen after a switch', async () => {
+    const root = document.createElement('div'); document.body.append(root);
+    vi.spyOn(document, 'referrer', 'get').mockReturnValue('https://www.google.com/search?q=private-query');
+    const ga = await import('../analytics/analytics');
+    ga.initAnalytics('G-TEST123', 'skp');
+    vi.stubGlobal('location', new URL('https://gyutae-kim.github.io/opencad-skp/de/'));
+    root.dispatchEvent(new CustomEvent('languagechange'));
+    expect(commands()).toEqual([]);
+    click('허용');
+    expect(events()).toHaveLength(1);
+    expect(events()[0]![2]).toMatchObject({ page_language: 'de', page_location: 'https://gyutae-kim.github.io/opencad-skp/de/', page_referrer: 'https://www.google.com' });
+    expect(JSON.stringify(commands())).not.toContain('private-query');
+  });
+
+  it('never starts collection after a language switch when collection was denied', async () => {
+    const root = document.createElement('div'); document.body.append(root);
+    localStorage.setItem('opencad.analytics-consent.v1', 'denied');
+    const ga = await import('../analytics/analytics');
+    ga.initAnalytics('G-TEST123', 'skp');
+    vi.stubGlobal('location', new URL('https://gyutae-kim.github.io/opencad-skp/de/'));
+    root.dispatchEvent(new CustomEvent('languagechange'));
+    expect(commands()).toEqual([]);
+  });
+
+  it.each((['dwgdxf', 'nc', 'step', 'skp'] as const).flatMap(tool =>
+    (['ko', 'en', 'ja', 'zh-CN', 'de'] as const).map(language => ({ tool, language })),
+  ))('retains the public $language URL on every $tool event', async ({ tool, language }) => {
+    const path = `/opencad-${tool}/${language === 'ko' ? '' : language + '/'}`;
+    vi.stubGlobal('location', new URL(`https://gyutae-kim.github.io${path}?open=https://private.example/customer.skp#private`));
+    localStorage.setItem('opencad.analytics-consent.v1', 'granted');
+    const ga = await import('../analytics/analytics');
+    ga.initAnalytics('G-TEST123', tool);
+    ga.beginOpen('local', 'skp').success();
+    ga.trackExport('png');
+    expect(events().map(entry => entry[1])).toEqual(['page_view', 'file_open_start', 'file_open_success', 'export_complete']);
+    for (const event of events()) {
+      expect(event[2]).toMatchObject({ page_location: `https://gyutae-kim.github.io${path}`, page_language: language });
+    }
+    expect(JSON.stringify(commands())).not.toMatch(/private\.example|customer\.skp|#private|open=/);
+  });
+
+  it.each([
+    ['/opencad-step/en', '/opencad-step/en/', 'en'],
+    ['/opencad-step/en/index.html', '/opencad-step/en/', 'en'],
+    ['/opencad-step/index.html', '/opencad-step/', 'ko'],
+    ['/opencad-step/fr/', '/opencad-step/', 'ko'],
+    ['/opencad-step/de/customer-secret.skp', '/opencad-step/', 'ko'],
+    ['/opencad-skp/ja/', '/opencad-step/', 'ko'],
+  ])('normalizes %s without collecting arbitrary paths', async (pathname, path, language) => {
+    vi.stubGlobal('location', new URL(`https://gyutae-kim.github.io${pathname}?name=private#secret`));
+    localStorage.setItem('opencad.analytics-consent.v1', 'granted');
+    const ga = await import('../analytics/analytics');
+    ga.initAnalytics('G-TEST123', 'step');
+    expect(events()[0]![2]).toMatchObject({ page_location: `https://gyutae-kim.github.io${path}`, page_language: language });
+    expect(JSON.stringify(commands())).not.toMatch(/customer-secret|name=|#secret/);
+  });
+
+  it('keeps a limited foreign-language visit cookie-free and excludes CAD actions', async () => {
+    vi.stubGlobal('location', new URL('https://gyutae-kim.github.io/opencad-skp/ja/?utm_source=github&open=private.skp#secret'));
+    localStorage.setItem('opencad.analytics-consent.v1', 'limited');
+    const ga = await import('../analytics/analytics');
+    ga.initAnalytics('G-TEST123', 'skp');
+    ga.beginOpen('local', 'skp').success(); ga.trackExport('png');
+    expect(events()).toHaveLength(1);
+    expect(events()[0]![2]).toMatchObject({ page_location: 'https://gyutae-kim.github.io/opencad-skp/ja/', page_language: 'ja', page_referrer: '' });
+    expect(JSON.stringify(commands())).not.toMatch(/utm_source|private\.skp|#secret/);
+  });
+
+  it('identifies the language of each explicit public portfolio route', async () => {
+    localStorage.setItem('opencad.analytics-consent.v1', 'granted');
+    const ga = await import('../analytics/analytics');
+    ga.initAnalytics('G-TEST123', 'portfolio');
+    ga.trackPage('/en/opencad', 'OpenCAD | 도구 모음', 'OpenCAD 소개');
+    ga.trackPage('/de/opencad', 'OpenCAD | 도구 모음', 'OpenCAD 소개');
+    expect(events().map(entry => (entry[2] as Record<string, string>).page_language)).toEqual(['en', 'de']);
+  });
+
   it('waits for a choice, then refusal sends only cookie-free public visits', async () => {
     const ga = await import('../analytics/analytics');
     ga.initAnalytics('G-TEST123', 'skp');
