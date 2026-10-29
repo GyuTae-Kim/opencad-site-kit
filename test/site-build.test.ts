@@ -56,7 +56,7 @@ describe('an app whose manifest and its link live in public/ and index.html', ()
     expect(html).toContain('href="https://gyutae-kim.github.io/en/opencad"');
     expect(html).toContain('<a href="https://gyutae-kim.github.io/opencad-step/de/" lang="de" hreflang="de">Deutsch</a>');
     const ko = readFileSync(join(dist, 'index.html'), 'utf8');
-    expect(ko).toContain('<!-- localized-metadata:start --><title>OpenCAD 시험 뷰어 | 합성 앱</title>');
+    expect(ko).toContain('<!-- localized-metadata:start --><title translate="no">OpenCAD 시험 뷰어 | 합성 앱</title>');
     expect(ko).not.toContain('<base href');
   });
 
@@ -115,6 +115,8 @@ describe('an app whose manifest and its link live in public/ and index.html', ()
       expect(() => checkI18n({ root: dist })).toThrow(/ja: untranslated static introduction/);
       writeFileSync(page, original.replace('href="./ja/manifest.webmanifest"', 'href="/manifest.webmanifest"'));
       expect(() => checkI18n({ root: dist })).toThrow(/outside the app/);
+      writeFileSync(page, original.replace('<title translate="no">', '<title>'));
+      expect(() => checkI18n({ root: dist })).toThrow(/ja: app-localized title must be protected/);
     } finally { writeFileSync(page, original); }
   });
 });
@@ -159,7 +161,7 @@ describe('plugins without a build', () => {
     const plugin = siteMetadata(site) as unknown as { transformIndexHtml: { handler(html: string): string } };
     expect(() => plugin.transformIndexHtml.handler('<head></head>')).toThrow(/one shared metadata marker/);
     expect(() => plugin.transformIndexHtml.handler('<!-- site-metadata --><!-- site-metadata -->')).toThrow(/one shared metadata marker/);
-    expect(plugin.transformIndexHtml.handler('<head><!-- site-metadata --></head>')).toMatch(/^<head><!-- localized-metadata:start --><title>/);
+    expect(plugin.transformIndexHtml.handler('<head><!-- site-metadata --></head>')).toMatch(/^<head><!-- localized-metadata:start --><title translate="no">/);
   });
   it('serves the sitemap and the language manifests from the development server', () => {
     const handlers: ((req: { url?: string }, res: unknown, next: () => void) => void)[] = [];
@@ -180,7 +182,7 @@ describe('plugins without a build', () => {
     const html = localizeHtml('<html lang="ko"><head><!-- localized-metadata:start -->old<!-- localized-metadata:end --></head><body><main><p>열기</p></main></body></html>', 'ja', site);
     expect(html).toContain('<html lang="ja"');
     expect(html).toContain('<p>開く</p>');
-    expect(html).toContain('<title>OpenCAD テストビューア | 合成アプリ</title>');
+    expect(html).toContain('<title translate="no">OpenCAD テストビューア | 合成アプリ</title>');
     expect(html).not.toContain('old');
   });
 });

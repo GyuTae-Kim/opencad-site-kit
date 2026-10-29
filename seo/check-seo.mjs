@@ -16,6 +16,7 @@ export function checkSeo({ metadata, history, root = 'dist' }) {
   const dom = new JSDOM(raw.toString(), { url: metadata.url });
   const doc = dom.window.document;
   assert.equal(doc.title, metadata.title);
+  assert.equal(doc.querySelector('title').getAttribute('translate'), 'no', 'App-localized title must be protected from browser translation');
   const tags = [
     ['meta[name="description"]', metadata.description], ['meta[name="author"]', metadata.author.name],
     ['meta[name="robots"]', 'index, follow, max-image-preview:large'],

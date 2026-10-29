@@ -35,6 +35,7 @@ export function checkI18n({ root = 'dist' } = {}) {
     const metadata = metadataForLanguage(code); const appUrl = metadataForLanguage('ko').url;
     const dom = new JSDOM(raw, { url: metadata.url }); const doc = dom.window.document;
     assert.equal(doc.documentElement.lang, code); assert.equal(doc.title, metadata.title); assert.equal(doc.querySelector('link[rel=canonical]').href, metadata.url);
+    assert.equal(doc.querySelector('title').getAttribute('translate'), 'no', `${code}: app-localized title must be protected from browser translation`);
     assert.equal(doc.querySelectorAll('link[rel=alternate][hreflang]').length, 6);
     for (const item of languages) assert.equal(doc.querySelector(`link[hreflang="${item.code}"]`).href, metadataForLanguage(item.code).url);
     for (const script of doc.querySelectorAll('script[src]')) assert.equal(new URL(script.src).pathname.includes(`/${code}/assets/`), false, 'nested language assets must resolve to application root');
