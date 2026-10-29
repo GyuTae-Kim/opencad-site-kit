@@ -35,7 +35,7 @@ npm에 올리지 않고 GitHub 의존으로 씁니다. 빌드 때만 쓰므로 `
 
 ```json
 "devDependencies": {
-  "opencad-site-kit": "github:GyuTae-Kim/opencad-site-kit#v0.1.5"
+  "opencad-site-kit": "github:GyuTae-Kim/opencad-site-kit#v0.1.6"
 },
 "scripts": {
   "build": "tsc --noEmit && vite build && npm run check:seo && npm run check:i18n",
@@ -178,3 +178,5 @@ opencad-nc `eb2bd8c`, opencad-dwgdxf `eea2fcf`). 갈래마다 고친 쪽을 따�
 ## 라이선스
 
 MIT
+
+앱이 언어별로 생성하는 탭 제목에는 `translate="no"`를 지정합니다. 앱 생성 제목과 그 안의 원본 파일명을 번역 대상에서 제외하도록 표시하며, SEO·i18n 검사가 이 속성을 확인합니다. 번역기의 속성 준수 여부와 사용자 브라우저 설정에 따라 본문·언어 속성의 표시가 달라질 수 있습니다.

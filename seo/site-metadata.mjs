@@ -35,7 +35,9 @@ export function renderMetadata(site, language = 'ko') {
   const { history } = site;
   const metadata = metadataForLanguage(language);
   const image = metadata.image;
-  const tags = [`<title>${escape(metadata.title)}</title>`, `<link rel="canonical" href="${escape(metadata.url)}">`,
+  // The app localizes this title and may put an original file name in it.
+  // Browser translation must not feed a translated title back into that source.
+  const tags = [`<title translate="no">${escape(metadata.title)}</title>`, `<link rel="canonical" href="${escape(metadata.url)}">`,
     `<link rel="sitemap" type="application/xml" href="${escape(languageUrl(metadata.url,'ko'))}sitemap.xml">`];
   const names = { description: metadata.description, robots: 'index, follow, max-image-preview:large', author: metadata.author.name,
     'twitter:card': 'summary_large_image', 'twitter:title': metadata.title, 'twitter:description': metadata.description,
