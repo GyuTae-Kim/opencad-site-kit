@@ -212,6 +212,16 @@ describe('host side: <opencad-viewer>', () => {
     await expect(result).resolves.toBeUndefined();
   });
 
+  it('accepts a Blob made in another window and refuses anything else', async () => {
+    const { element, iframe, sent, fromApp } = mount({ app: 'dwgdxf', base: 'https://apps.example/' });
+    fromApp({ type: 'opencad:ready', protocol: 1 });
+    const foreign = await new Response('0\nEOF').blob();
+    void element.open(foreign, 'plan.dxf').catch(() => {});
+    expect(sent()).toHaveBeenCalledTimes(1);
+    await expect(element.open('not a file' as never, 'a.dxf')).rejects.toThrow('bad-request');
+    expect(iframe().src).toBe('https://apps.example/opencad-dwgdxf/');
+  });
+
   it('explains an unknown file type and reports a silent app', async () => {
     const unknown = mount({ src: 'notes.txt' });
     expect(unknown.element.shadowRoot!.querySelector('iframe')).toBeNull();

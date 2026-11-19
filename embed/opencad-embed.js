@@ -37,6 +37,12 @@ export const APPS = {
 
 const TIMEOUT_MS = 30_000;
 
+/** 다른 창(realm)에서 만든 Blob·File도 받게 instanceof 대신 꼬리표로 본다 */
+function isBlob(value) {
+  const tag = Object.prototype.toString.call(value);
+  return tag === '[object Blob]' || tag === '[object File]';
+}
+
 /** 파일 이름의 확장자로 앱 이름(없으면 null) */
 export function appForName(name, apps = APPS) {
   const ext = /\.([^./\\?#]+)$/.exec(String(name ?? ''))?.[1]?.toLowerCase();
@@ -130,7 +136,7 @@ export class OpenCadViewer extends Base {
 
   /** 파일(File·Blob)을 앱에 넘긴다. app 속성이 없고 형식이 다르면 그 형식의 앱으로 바꾼다 */
   open(file, name) {
-    if (typeof Blob === 'undefined' || !(file instanceof Blob)) return Promise.reject(new Error('bad-request'));
+    if (!isBlob(file)) return Promise.reject(new Error('bad-request'));
     const fileName = String(name ?? file.name ?? '').trim();
     const apps = this.constructor.apps;
     if (!this.getAttribute('app') || !apps[this.getAttribute('app')]) {
