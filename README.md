@@ -185,8 +185,9 @@ OpenCAD 앱을 자기 웹페이지에 넣을 때는 스크립트 한 줄과 요�
 2. 통계: `initAnalytics(GA4_MEASUREMENT_ID, 'step')` → `initAnalytics(OPENCAD_ANALYTICS, 'step')`. 형이 바뀌어 예전 꼴은 형 검사에서 걸립니다
 3. (선택) 임베드: `consumeLaunchFiles` 옆에 `acceptEmbeddedFiles(…)`
 
-같은 입력에서 빌드 결과(HTML·앱 정보·사이트맵·sw.js 원본)는 0.1.6과 같습니다 — 언어 주소는 0.1.x 규칙과 520가지 주소·언어 조합으로 견줬습니다(`test/i18n-core.test.ts`).
-바뀌는 동작은 iframe 안에서 통계·서비스 워커가 꺼지는 것뿐입니다. 앱 스크립트가 바뀌므로 내용 수정일은 올립니다.
+네 앱을 옮기며 `opencad-site compare-dist`로 견주니 HTML·사이트맵·sw.js는 자산 이름·날짜·판 이름을 맞추면 0.1.6과 같고 앱 정보는 바이트까지 같았습니다.
+언어 주소는 0.1.x 규칙과 520가지 주소·언어 조합으로 견줬습니다(`test/i18n-core.test.ts`). 바뀌는 동작은 iframe 안에서 통계·서비스 워커가 꺼지는 것뿐입니다.
+첫 화면 스크립트는 1~2 kB(gzip) 늘고 스크립트가 바뀌므로 내용 수정일은 올립니다.
 
 방문 통계의 `page_location`은 `/opencad-step/de/`처럼 앱의 실제 언어별 정식 주소를 보존하고, `page_language`는 `ko`·`en`·`ja`·`zh-CN`·`de` 중 하나로 기록합니다. 페이지 조회와 파일 열기·내보내기 이벤트에 같은 언어 문맥을 사용합니다. 기존 앱이 URL 갱신 뒤 보내는 `languagechange` 이벤트도 캡처해 언어를 전환할 때 새 조회를 한 번 기록합니다. 알려진 언어 진입 주소만 허용하며 파일명·임의 하위 경로·파일 URL·fragment를 보내지 않습니다. 허용된 캠페인 값은 기존처럼 분석 동의 시에만 전송합니다. 이전 판에서 기본 주소에 합쳐진 GA 이력은 소급 복원할 수 없습니다.
 
@@ -236,6 +237,8 @@ npm test            # .runtime/variants가 있으면 원본과 견주는 시험�
 | [opencad-step](https://github.com/GyuTae-Kim/opencad-step) | v0.1.2 | #18 |
 | [opencad-skp](https://github.com/GyuTae-Kim/opencad-skp) | v0.1.3 | #21 |
 | [opencad-dwgdxf](https://github.com/GyuTae-Kim/opencad-dwgdxf) | v0.1.3 | #28 |
+
+0.2.0(설정 분리·임베드) 적용 PR: opencad-step #114 · opencad-skp #115 · opencad-nc #106 · opencad-dwgdxf #176.
 
 단계마다의 빌드 결과 비교와 바뀐 동작은 [docs/ADOPTION.md](docs/ADOPTION.md)의 "적용 기록"에 있습니다. 앱이 새 판으로 올릴 때는 이 표도 고칩니다.
 
