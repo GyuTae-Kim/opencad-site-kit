@@ -87,6 +87,7 @@ export class OpenCadViewer extends Base {
   #loadedSrc = null;
   #fileApp = null;
   #message = null;
+  #started = false;
   #onMessage = (event) => this.#receive(event);
 
   constructor() {
@@ -99,10 +100,12 @@ export class OpenCadViewer extends Base {
 
   connectedCallback() {
     window.addEventListener('message', this.#onMessage);
+    this.#started = true;
     this.#render();
   }
 
   disconnectedCallback() {
+    this.#started = false;
     window.removeEventListener('message', this.#onMessage);
     this.#fail(null, 'disconnected', false);
     this.#frame?.remove();
@@ -112,7 +115,8 @@ export class OpenCadViewer extends Base {
   }
 
   attributeChangedCallback(name, before, after) {
-    if (!this.isConnected || before === after) return;
+    // 붙기 전(파서가 요소를 올리며 속성마다 부르는 때)에는 그리지 않는다 — connectedCallback이 모든 속성으로 한 번 그린다
+    if (!this.#started || before === after) return;
     if (name === 'src' || name === 'name') this.#fileApp = null;
     if (this.#render()) return;
     if ((name === 'src' || name === 'name') && this.#ready) this.#loadSrc();

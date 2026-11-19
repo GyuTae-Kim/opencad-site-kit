@@ -225,6 +225,21 @@ describe('host side: <opencad-viewer>', () => {
     expect(silent.events).toEqual([{ type: 'opencad-error', detail: { id: null, code: 'timeout' } }]);
   });
 
+  it('draws once when an element already in the page is upgraded (module script after the markup)', () => {
+    // 문서에 먼저 있던 요소를 나중에 정의한다 — 속성마다 attributeChangedCallback이 붙은 채로 먼저 불린다
+    document.body.innerHTML = '<opencad-viewer-late src="a.step" lang="de" base="https://apps.example/" title="Part"></opencad-viewer-late>';
+    const created: string[] = [];
+    const append = ShadowRoot.prototype.append;
+    vi.spyOn(ShadowRoot.prototype, 'append').mockImplementation(function (this: ShadowRoot, ...nodes) {
+      for (const node of nodes) if (node instanceof HTMLIFrameElement) created.push(node.src);
+      return append.apply(this, nodes);
+    });
+    customElements.define('opencad-viewer-late', class extends OpenCadViewer {});
+    expect(created).toEqual(['https://apps.example/opencad-step/de/']);
+    expect(document.querySelector('opencad-viewer-late')!.shadowRoot!.querySelector('iframe')!.title).toBe('Part');
+    vi.restoreAllMocks();
+  });
+
   it('reloads only when the app address changes', async () => {
     vi.stubGlobal('fetch', async () => new Response('x'));
     const { element, iframe, sent, fromApp } = mount({ src: 'a.step', base: 'https://apps.example/' });
