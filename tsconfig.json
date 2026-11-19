@@ -15,5 +15,5 @@
     "resolveJsonModule": true,
     "types": ["vite/client", "node"]
   },
-  "include": ["i18n", "pwa", "analytics", "test", "vitest.config.ts"]
+  "include": ["i18n", "pwa", "analytics", "embed", "presets", "test", "vitest.config.ts"]
 }

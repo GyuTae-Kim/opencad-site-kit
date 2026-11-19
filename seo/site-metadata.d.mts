@@ -1,3 +1,4 @@
+import type { SiteRoutes } from '../i18n/core.mjs';
 import type { WebManifest } from '../pwa/manifest.mjs';
 
 export interface SiteMetadata {
@@ -27,6 +28,6 @@ export interface Site {
   renderMetadata(language?: string): string;
   sitemapXml(): string;
 }
-export function defineSite(options: { metadata: SiteMetadata; history: ContentHistory; manifest?: ManifestOptions | null }): Site;
+export function defineSite(options: { metadata: SiteMetadata; history: ContentHistory; manifest?: ManifestOptions | null; routes?: SiteRoutes; untranslated?: string[] }): Site;
 export function renderMetadata(site: Site, language?: string): string;
 export function sitemapXml(site: Site): string;

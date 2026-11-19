@@ -1,5 +1,8 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { OPENCAD_ANALYTICS } from '../presets/opencad.mjs';
+
+const TEST_SITE = { ...OPENCAD_ANALYTICS, measurementId: 'G-TEST123' };
 
 type TaggedWindow = Window & { dataLayer?: unknown[]; gtag?: (...args: unknown[]) => void };
 const tagged = window as TaggedWindow;
@@ -40,7 +43,7 @@ describe('GA4 collection boundary', () => {
     vi.stubGlobal('location', new URL('https://gyutae-kim.github.io/opencad-step/en/?open=private.step#secret'));
     localStorage.setItem('opencad.analytics-consent.v1', consent);
     const ga = await import('../analytics/analytics');
-    ga.initAnalytics('G-TEST123', 'step');
+    ga.initAnalytics(TEST_SITE, 'step');
     root.dispatchEvent(new CustomEvent('languagechange', { detail: 'untrusted-private-detail' }));
     expect(events()).toHaveLength(1);
     vi.stubGlobal('location', new URL('https://gyutae-kim.github.io/opencad-step/de/?open=private.step#secret'));
@@ -59,7 +62,7 @@ describe('GA4 collection boundary', () => {
     const root = document.createElement('div'); document.body.append(root);
     vi.spyOn(document, 'referrer', 'get').mockReturnValue('https://www.google.com/search?q=private-query');
     const ga = await import('../analytics/analytics');
-    ga.initAnalytics('G-TEST123', 'skp');
+    ga.initAnalytics(TEST_SITE, 'skp');
     vi.stubGlobal('location', new URL('https://gyutae-kim.github.io/opencad-skp/de/'));
     root.dispatchEvent(new CustomEvent('languagechange'));
     expect(commands()).toEqual([]);
@@ -73,7 +76,7 @@ describe('GA4 collection boundary', () => {
     const root = document.createElement('div'); document.body.append(root);
     localStorage.setItem('opencad.analytics-consent.v1', 'denied');
     const ga = await import('../analytics/analytics');
-    ga.initAnalytics('G-TEST123', 'skp');
+    ga.initAnalytics(TEST_SITE, 'skp');
     vi.stubGlobal('location', new URL('https://gyutae-kim.github.io/opencad-skp/de/'));
     root.dispatchEvent(new CustomEvent('languagechange'));
     expect(commands()).toEqual([]);
@@ -86,7 +89,7 @@ describe('GA4 collection boundary', () => {
     vi.stubGlobal('location', new URL(`https://gyutae-kim.github.io${path}?open=https://private.example/customer.skp#private`));
     localStorage.setItem('opencad.analytics-consent.v1', 'granted');
     const ga = await import('../analytics/analytics');
-    ga.initAnalytics('G-TEST123', tool);
+    ga.initAnalytics(TEST_SITE, tool);
     ga.beginOpen('local', 'skp').success();
     ga.trackExport('png');
     expect(events().map(entry => entry[1])).toEqual(['page_view', 'file_open_start', 'file_open_success', 'export_complete']);
@@ -107,7 +110,7 @@ describe('GA4 collection boundary', () => {
     vi.stubGlobal('location', new URL(`https://gyutae-kim.github.io${pathname}?name=private#secret`));
     localStorage.setItem('opencad.analytics-consent.v1', 'granted');
     const ga = await import('../analytics/analytics');
-    ga.initAnalytics('G-TEST123', 'step');
+    ga.initAnalytics(TEST_SITE, 'step');
     expect(events()[0]![2]).toMatchObject({ page_location: `https://gyutae-kim.github.io${path}`, page_language: language });
     expect(JSON.stringify(commands())).not.toMatch(/customer-secret|name=|#secret/);
   });
@@ -116,7 +119,7 @@ describe('GA4 collection boundary', () => {
     vi.stubGlobal('location', new URL('https://gyutae-kim.github.io/opencad-skp/ja/?utm_source=github&open=private.skp#secret'));
     localStorage.setItem('opencad.analytics-consent.v1', 'limited');
     const ga = await import('../analytics/analytics');
-    ga.initAnalytics('G-TEST123', 'skp');
+    ga.initAnalytics(TEST_SITE, 'skp');
     ga.beginOpen('local', 'skp').success(); ga.trackExport('png');
     expect(events()).toHaveLength(1);
     expect(events()[0]![2]).toMatchObject({ page_location: 'https://gyutae-kim.github.io/opencad-skp/ja/', page_language: 'ja', page_referrer: '' });
@@ -126,7 +129,7 @@ describe('GA4 collection boundary', () => {
   it('identifies the language of each explicit public portfolio route', async () => {
     localStorage.setItem('opencad.analytics-consent.v1', 'granted');
     const ga = await import('../analytics/analytics');
-    ga.initAnalytics('G-TEST123', 'portfolio');
+    ga.initAnalytics(TEST_SITE, 'portfolio');
     ga.trackPage('/en/opencad', 'OpenCAD | 도구 모음', 'OpenCAD 소개');
     ga.trackPage('/de/opencad', 'OpenCAD | 도구 모음', 'OpenCAD 소개');
     expect(events().map(entry => (entry[2] as Record<string, string>).page_language)).toEqual(['en', 'de']);
@@ -134,7 +137,7 @@ describe('GA4 collection boundary', () => {
 
   it('waits for a choice, then refusal sends only cookie-free public visits', async () => {
     const ga = await import('../analytics/analytics');
-    ga.initAnalytics('G-TEST123', 'skp');
+    ga.initAnalytics(TEST_SITE, 'skp');
     ga.beginOpen('local', 'skp').success();
     expect(document.getElementById('opencad-ga4')).toBeNull();
     expect(commands()).toEqual([]);
@@ -151,7 +154,7 @@ describe('GA4 collection boundary', () => {
 
   it('pins public metadata and excludes file/URL/title/error content from events', async () => {
     const ga = await import('../analytics/analytics');
-    ga.initAnalytics('G-TEST123', 'skp');
+    ga.initAnalytics(TEST_SITE, 'skp');
     click('허용');
     document.title = 'private-customer.skp - OpenCAD';
     const attempt = ga.beginOpen('local', 'skp');
@@ -171,7 +174,7 @@ describe('GA4 collection boundary', () => {
   it('keeps sample success separate from real-file activation', async () => {
     localStorage.setItem('opencad.analytics-consent.v1', 'granted');
     const ga = await import('../analytics/analytics');
-    ga.initAnalytics('G-TEST123', 'skp');
+    ga.initAnalytics(TEST_SITE, 'skp');
     ga.beginOpen('sample', 'skp').success();
     expect(events().map((entry) => entry[1])).toContain('sample_open_success');
     expect(events().map((entry) => entry[1])).not.toContain('file_open_success');
@@ -179,7 +182,7 @@ describe('GA4 collection boundary', () => {
 
   it('supports withdrawal and does not send later CAD actions', async () => {
     const ga = await import('../analytics/analytics');
-    ga.initAnalytics('G-TEST123', 'skp');
+    ga.initAnalytics(TEST_SITE, 'skp');
     click('허용');
     const count = events().length;
     expect(document.getElementById('opencad-analytics-choice')).toBeNull();
@@ -192,7 +195,7 @@ describe('GA4 collection boundary', () => {
   it('preserves old complete refusals without reprompting or silently enabling Google', async () => {
     localStorage.setItem('opencad.analytics-consent.v1', 'denied');
     const ga = await import('../analytics/analytics');
-    ga.initAnalytics('G-TEST123', 'skp');
+    ga.initAnalytics(TEST_SITE, 'skp');
     expect(commands()).toEqual([]);
     expect(document.getElementById('opencad-analytics-choice')).toBeNull();
     ga.showAnalyticsSettings(); click('수집 안 함');
@@ -203,7 +206,7 @@ describe('GA4 collection boundary', () => {
   it('remembers limited collection across app loads and sends each public SPA route once', async () => {
     localStorage.setItem('opencad.analytics-consent.v1', 'limited');
     const ga = await import('../analytics/analytics');
-    ga.initAnalytics('G-TEST123', 'portfolio');
+    ga.initAnalytics(TEST_SITE, 'portfolio');
     ga.trackPage('/research', '연구 | 목록', '연구');
     ga.trackPage('/research', '연구 | 목록', '연구');
     ga.trackPage('/opencad', 'OpenCAD | 도구 모음', 'OpenCAD 소개');
@@ -221,7 +224,7 @@ describe('GA4 collection boundary', () => {
     const listener = vi.spyOn(window, 'addEventListener');
     const write = vi.spyOn(Storage.prototype, 'setItem');
     const ga = await import('../analytics/analytics');
-    ga.initAnalytics('G-TEST123', 'skp');
+    ga.initAnalytics(TEST_SITE, 'skp');
     const storage = listener.mock.calls.find(call => String(call[0]) === 'storage')![1] as unknown as (e: StorageEvent) => void;
     storage(new StorageEvent('storage', { key: 'opencad.analytics-consent.v1', newValue: 'limited' }));
     expect(write).not.toHaveBeenCalled();
@@ -237,7 +240,7 @@ describe('GA4 collection boundary', () => {
   it.each(['localhost', 'preview.example.com'])('never loads GA on %s', async (host) => {
     vi.stubGlobal('location', new URL(`https://${host}/`));
     const ga = await import('../analytics/analytics');
-    ga.initAnalytics('G-TEST123', 'skp');
+    ga.initAnalytics(TEST_SITE, 'skp');
     expect(document.getElementById('opencad-analytics-choice')).toBeNull();
     expect(commands()).toEqual([]);
   });
@@ -246,14 +249,14 @@ describe('GA4 collection boundary', () => {
     localStorage.setItem('opencad.analytics-consent.v1', 'granted');
     Object.defineProperty(navigator, 'globalPrivacyControl', { value: true, configurable: true });
     const ga = await import('../analytics/analytics');
-    ga.initAnalytics('G-TEST123', 'skp');
+    ga.initAnalytics(TEST_SITE, 'skp');
     expect(commands()).toEqual([]);
   });
 
   it('sends one page view for each SPA route and does not invent a home visit', async () => {
     localStorage.setItem('opencad.analytics-consent.v1', 'granted');
     const ga = await import('../analytics/analytics');
-    ga.initAnalytics('G-TEST123', 'portfolio');
+    ga.initAnalytics(TEST_SITE, 'portfolio');
     expect(events()).toEqual([]);
     ga.trackPage('/opencad', 'OpenCAD | 도구 모음', 'OpenCAD 소개');
     ga.trackPage('/opencad', 'OpenCAD | 도구 모음', 'OpenCAD 소개');
@@ -273,7 +276,7 @@ describe('GA4 collection boundary', () => {
     ['step', 'OpenCAD | STEP 뷰어'], ['skp', 'OpenCAD | SKP 뷰어'],
   ] as const)('uses a stable public identity for %s', async (tool, title) => {
     const ga = await import('../analytics/analytics');
-    ga.initAnalytics('G-TEST123', tool); click('허용');
+    ga.initAnalytics(TEST_SITE, tool); click('허용');
     expect(events()[0]![2]).toMatchObject({ page_title: title, content_group: 'OpenCAD 앱' });
   });
 
@@ -282,7 +285,7 @@ describe('GA4 collection boundary', () => {
     expect(ga.campaignQuery('?utm_source=github&utm_medium=referral&utm_campaign=a%40b.com&open=secret&name=private')).toBe('?utm_source=github&utm_medium=referral');
     tagged.gtag = () => { throw new Error('blocked'); };
     localStorage.setItem('opencad.analytics-consent.v1', 'granted');
-    expect(() => ga.initAnalytics('G-TEST123', 'skp')).not.toThrow();
+    expect(() => ga.initAnalytics(TEST_SITE, 'skp')).not.toThrow();
     expect(() => ga.beginOpen('local', 'skp').success()).not.toThrow();
   });
 });
@@ -291,12 +294,72 @@ describe('shared format lists', () => {
   it('reports the formats every OpenCAD app opens and exports, and only those', async () => {
     localStorage.setItem('opencad.analytics-consent.v1', 'granted');
     const ga = await import('../analytics/analytics');
-    ga.initAnalytics('G-TEST123', 'nc');
+    ga.initAnalytics(TEST_SITE, 'nc');
     for (const format of ['PGI', 'xml', 'step', 'mpr', 'secret']) ga.beginOpen('local', format).success();
     for (const format of ['stl', 'obj', 'csv', 'dwg'] as const) ga.trackExport(format);
     const starts = events().filter((entry) => entry[1] === 'file_open_start').map((entry) => (entry[2] as Record<string, unknown>).file_format);
     expect(starts).toEqual(['pgi', 'xml', 'step', 'mpr', 'other']);
     const exports = events().filter((entry) => entry[1] === 'export_complete').map((entry) => (entry[2] as Record<string, unknown>).export_format);
     expect(exports).toEqual(['stl', 'obj', 'csv', 'dwg']);
+  });
+});
+
+describe('another site', () => {
+  const OTHER = {
+    measurementId: 'G-OTHER42', host: 'cad.example.com', consentKey: 'example.consent',
+    apps: { home: { path: '/', title: 'Example | Home', group: 'Pages', site: true }, viewer: { path: '/viewer/', title: 'Example | Viewer' } },
+    sourceTool: (url: URL) => (url.hostname === 'git.example.com' ? 'viewer' : null),
+    text: { allow: 'Allow', limited: 'Basic only', deny: 'No' },
+  };
+
+  it('uses only its own host, paths, titles, consent key and source links', async () => {
+    vi.stubGlobal('location', new URL('https://cad.example.com/viewer/en/?open=secret.step#private'));
+    localStorage.setItem('opencad.analytics-consent.v1', 'granted');
+    const ga = await import('../analytics/analytics');
+    ga.initAnalytics(OTHER, 'viewer');
+    expect(document.querySelector('#opencad-analytics-choice')?.textContent).toContain('Basic only');
+    click('Allow');
+    expect(localStorage.getItem('example.consent')).toBe('granted');
+    expect(events()[0]).toEqual(['event', 'page_view', expect.objectContaining({ send_to: 'G-OTHER42', tool: 'viewer', page_title: 'Example | Viewer', content_group: 'app', page_language: 'en', page_location: 'https://cad.example.com/viewer/en/' })]);
+    expect(commands().find(entry => entry[0] === 'config')![2]).toMatchObject({ cookie_domain: 'cad.example.com' });
+    const link = (href: string) => { const a = document.createElement('a'); a.href = href; a.addEventListener('click', event => event.preventDefault()); document.body.append(a); a.click(); };
+    link('https://git.example.com/me/viewer'); link('https://github.com/GyuTae-Kim/opencad-step'); link('https://gyutae-kim.github.io/opencad-step/');
+    expect(events().slice(1).map(entry => [entry[1], (entry[2] as Record<string, string>).target_tool])).toEqual([['source_open', 'viewer']]);
+    expect(JSON.stringify(commands())).not.toMatch(/secret|#private|gyutae-kim/);
+  });
+
+  it('reports a routed site with trackPage and its default group', async () => {
+    vi.stubGlobal('location', new URL('https://cad.example.com/en/'));
+    localStorage.setItem('example.consent', 'granted');
+    const ga = await import('../analytics/analytics');
+    ga.initAnalytics(OTHER, 'home');
+    expect(events()).toEqual([]);
+    ga.trackPage('/en/docs', 'Example | Docs');
+    expect(events()[0]![2]).toMatchObject({ page_location: 'https://cad.example.com/en/docs', page_language: 'en', content_group: 'Pages' });
+  });
+
+  it('stays off on other hosts, for unknown tools and without a configuration', async () => {
+    localStorage.setItem('opencad.analytics-consent.v1', 'granted');
+    localStorage.setItem('example.consent', 'granted');
+    const ga = await import('../analytics/analytics');
+    ga.initAnalytics(OTHER, 'viewer');
+    ga.initAnalytics(TEST_SITE, 'unknown');
+    ga.initAnalytics(undefined as never, 'skp');
+    ga.beginOpen('local', 'skp').success();
+    expect(commands()).toEqual([]);
+    expect(document.querySelector('#opencad-analytics-choice')).toBeNull();
+  });
+});
+
+describe('embedded in another page', () => {
+  it('never asks for consent or loads the tag inside a frame', async () => {
+    vi.spyOn(window, 'top', 'get').mockReturnValue({} as Window);
+    localStorage.setItem('opencad.analytics-consent.v1', 'granted');
+    const ga = await import('../analytics/analytics');
+    ga.initAnalytics(TEST_SITE, 'skp');
+    ga.showAnalyticsSettings();
+    ga.beginOpen('local', 'skp').success();
+    expect(commands()).toEqual([]);
+    expect(document.querySelector('#opencad-analytics-choice, #opencad-ga4')).toBeNull();
   });
 });

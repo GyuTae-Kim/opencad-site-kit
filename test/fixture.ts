@@ -101,7 +101,7 @@ export function createFixtureApp(name: string, { linkKit = true }: { linkKit?: b
   write('site/metadata.json', JSON.stringify(metadata, null, 2) + '\n');
   write('site/content-history.json', JSON.stringify({ lastmod: '2026-01-01T00:00:00Z', fingerprint: 'unset' }, null, 2) + '\n');
   for (const language of ['en', 'ja', 'zh-CN', 'de']) write(`site/locales/${language}.json`, JSON.stringify(catalogFor(language), null, 2) + '\n');
-  write('site/i18n-core.mjs', "import metadata from './metadata.json' with { type: 'json' };\nimport { configureI18n } from 'opencad-site-kit/i18n/core';\nconfigureI18n({ metadata });\nexport * from 'opencad-site-kit/i18n/core';\n");
+  write('site/i18n-core.mjs', "import metadata from './metadata.json' with { type: 'json' };\nimport { configureI18n } from 'opencad-site-kit/i18n/core';\nimport { OPENCAD_SITE } from 'opencad-site-kit/presets/opencad';\nconfigureI18n({ metadata, ...OPENCAD_SITE });\nexport * from 'opencad-site-kit/i18n/core';\n");
   write('site/i18n.mjs', "import en from './locales/en.json' with { type: 'json' };\nimport ja from './locales/ja.json' with { type: 'json' };\nimport zh from './locales/zh-CN.json' with { type: 'json' };\nimport de from './locales/de.json' with { type: 'json' };\nimport { registerCatalog } from './i18n-core.mjs';\nfor (const [language,content] of Object.entries({en,ja,'zh-CN':zh,de})) registerCatalog(language,content);\nexport * from './i18n-core.mjs';\n");
   write('tools/sw-template.js', swTemplate);
   if (linkKit) { mkdirSync(join(dir, 'node_modules'), { recursive: true }); symlinkSync(kitRoot, join(dir, 'node_modules', 'opencad-site-kit'), 'dir'); }

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenCAD 임베드 예제</title>
+<style>
+  body { margin: 0 auto; max-width: 960px; padding: 16px; font: 15px/1.6 system-ui, sans-serif; }
+  opencad-viewer { height: 520px; margin: 12px 0; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  #log { min-height: 1.6em; color: #555; }
+</style>
+</head>
+<body>
+<h1>OpenCAD 임베드 예제</h1>
+<p>파일을 고르면 이 페이지가 읽어 아래 앱(iframe)에 넘깁니다. 주소에 <code>?base=http://localhost:5173/</code>처럼 앱이 있는 곳을 주면 그 앱을 띄웁니다
+(로컬 개발 서버는 앱 뿌리가 <code>/</code>이므로 <code>?base=…&amp;flat</code>을 함께 줍니다).</p>
+<div class="row">
+  <input type="file" id="pick">
+  <button type="button" data-sample="step">STEP 예제</button>
+  <button type="button" data-sample="dwgdxf">DWG/DXF 예제</button>
+  <button type="button" data-sample="skp">SKP 예제</button>
+  <button type="button" data-sample="nc">NC 예제</button>
+</div>
+<p id="log" aria-live="polite"></p>
+<opencad-viewer id="viewer" app="step"></opencad-viewer>
+<script type="module">
+  import { APPS, OpenCadViewer } from '../embed/opencad-embed.js';
+  const query = new URLSearchParams(location.search);
+  const viewer = document.getElementById('viewer');
+  const log = document.getElementById('log');
+  // 로컬 개발 서버 하나(앱 뿌리 /)를 시험할 때: 모든 앱 경로를 뿌리로
+  if (query.has('flat')) OpenCadViewer.apps = Object.fromEntries(Object.entries(APPS).map(([key, app]) => [key, { ...app, path: '' }]));
+  if (query.get('base')) viewer.setAttribute('base', query.get('base'));
+  if (query.get('lang')) viewer.setAttribute('lang', query.get('lang'));
+  if (query.get('app')) viewer.setAttribute('app', query.get('app'));
+  for (const type of ['opencad-ready', 'opencad-done', 'opencad-error'])
+    viewer.addEventListener(type, (event) => { log.textContent = `${type} ${JSON.stringify(event.detail)}`; });
+  document.getElementById('pick').addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (file) viewer.open(file).catch((error) => { log.textContent = `열지 못함: ${error.message}`; });
+  });
+  for (const button of document.querySelectorAll('[data-sample]'))
+    button.addEventListener('click', () => { viewer.setAttribute('app', button.dataset.sample); viewer.setAttribute('sample', ''); });
+</script>
+</body>
+</html>

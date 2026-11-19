@@ -7,6 +7,8 @@
  * - 공유 받기(share_target)는 서비스 워커가 파일을 최근 문서에 넣고 ?recent=<id>(실패하면 ?share-error=<까닭>)로 보낸다.
  */
 
+import { isFramed } from '../embed/context';
+
 export interface SwWorker {
   readonly state: string;
   postMessage(msg: unknown): void;
@@ -32,9 +34,12 @@ export interface RegisterOptions {
   onVisible?: (check: () => void) => void;
 }
 
-/** 서비스 워커를 쓸 수 있는 곳인지(보안 맥락 — https 또는 이 컴퓨터) */
-export function canUseServiceWorker(loc: Pick<Location, 'protocol' | 'hostname'>, nav: { serviceWorker?: unknown }): boolean {
-  if (!nav.serviceWorker) return false;
+/**
+ * 서비스 워커를 쓸 수 있는 곳인지(보안 맥락 — https 또는 이 컴퓨터). 다른 페이지에 넣은(iframe) 앱은 쓰지 않는다 —
+ * 남의 페이지 안에서 새 판 알림·다시 읽기를 하지 않고, 그 사이트 몫의 저장 공간에 앱 파일을 담지 않는다
+ */
+export function canUseServiceWorker(loc: Pick<Location, 'protocol' | 'hostname'>, nav: { serviceWorker?: unknown }, framed: boolean = isFramed()): boolean {
+  if (!nav.serviceWorker || framed) return false;
   return loc.protocol === 'https:' || loc.hostname === 'localhost' || loc.hostname === '127.0.0.1' || loc.hostname === '[::1]';
 }
 
