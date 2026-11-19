@@ -8,6 +8,121 @@ OpenCAD 앱(STEP·SKP·NC·DWG·DXF)이 함께 쓰는 사이트 계층 도구입
 함께 쓰는 저장소: [opencad-step](https://github.com/GyuTae-Kim/opencad-step) · [opencad-skp](https://github.com/GyuTae-Kim/opencad-skp) ·
 [opencad-nc](https://github.com/GyuTae-Kim/opencad-nc) · [opencad-dwgdxf](https://github.com/GyuTae-Kim/opencad-dwgdxf)
 
+## 내 웹사이트에 OpenCAD 설치하기
+
+내 블로그·포트폴리오·제품 소개 페이지에 OpenCAD 앱(DWG·DXF 2D 캐드, STEP·SketchUp·NC 3D 뷰어)을 넣는 방법입니다.
+서버·계정·빌드 도구 없이 스크립트 한 줄과 `<opencad-viewer>` 요소 하나면 됩니다. 이 저장소와 네 앱 저장소는 모두 공개돼 있고 MIT입니다.
+
+| 내 사이트 | 방법 |
+|---|---|
+| HTML을 직접 넣을 수 있는 곳(정적 사이트, 블로그 테마, CMS의 HTML 블록) | [1. 스크립트 한 줄(CDN)](#1-스크립트-한-줄cdn) |
+| 바깥 CDN을 쓰지 않는 사이트 | [2. 파일 하나를 내 사이트에 두기](#2-파일-하나를-내-사이트에-두기) |
+| 번들러를 쓰는 웹앱(Vite·webpack·Next.js 등) | [3. npm으로 받기](#3-npm으로-받기) |
+| 스크립트를 넣을 수 없는 곳 | [4. iframe만 넣기](#4-iframe만-넣기) |
+| 앱까지 내 서버에서 내보내고 싶을 때 | [5. 앱을 직접 배포하기](#5-앱을-직접-배포하기) |
+
+### 1. 스크립트 한 줄(CDN)
+
+```html
+<script type="module"
+  src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.2.0/embed/opencad-embed.js"
+  integrity="sha384-CJXDL5TstGA6j3akEHj32i+tZFlP/7O4j95pFlZZ/sjt4svlLy4THa7i8gapJu5u"
+  crossorigin="anonymous"></script>
+
+<opencad-viewer src="/files/bracket.step" lang="en" style="height: 520px"></opencad-viewer>
+```
+
+- 요소는 `src`의 확장자로 앱을 고릅니다: `.dwg`·`.dxf`는 DWG/DXF 캐드, `.step`·`.stp`는 STEP 뷰어, `.skp`는 SKP 뷰어, `.nc`·`.gcode` 등은 NC 뷰어입니다
+- `src` 파일은 내 페이지가 직접 받아 앱에 넘깁니다. 그래서 내 사이트에 있는 파일이거나 CORS를 허용한 주소여야 합니다
+- 주소에 `@v0.2.0`처럼 태그를 붙여 판을 고정합니다. 태그는 옮기지 않으므로 같은 주소는 늘 같은 파일이고, `integrity` 값도 그대로 맞습니다.
+  파일이 한 바이트라도 다르면 브라우저가 실행하지 않습니다. 새 판으로 올릴 때는 주소와 `integrity`를 함께 바꿉니다:
+  `curl -sL <스크립트 주소> | openssl dgst -sha384 -binary | openssl base64 -A`
+- 크기는 CSS로 정합니다(기본 높이 480px, 너비는 부모에 맞춤). 화면 언어는 `lang`(`ko`·`en`·`ja`·`zh-CN`·`de`)으로 고릅니다
+
+방문자가 자기 파일을 열게 하려면 `src` 없이 `app`을 주고, 파일을 고르면 `open()`을 부릅니다.
+
+```html
+<input type="file" id="pick" accept=".dwg,.dxf">
+<opencad-viewer id="viewer" app="dwgdxf"></opencad-viewer>
+<script type="module">
+  const viewer = document.getElementById('viewer');
+  document.getElementById('pick').addEventListener('change', async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    try { await viewer.open(file); }                         // 앱이 열기를 마치면 풀린다
+    catch (error) { console.warn('열지 못함', error.message); }  // unsupported · too-large · timeout …
+  });
+</script>
+```
+
+속성·함수·이벤트와 오류 코드는 [docs/EMBED.md](docs/EMBED.md)에 있습니다.
+
+### 2. 파일 하나를 내 사이트에 두기
+
+요소 스크립트는 의존 없는 파일 하나입니다(12.6 KB, gzip 4.8 KB). 받아서 내 사이트에 올리고 그 주소로 불러옵니다.
+
+```bash
+curl -L -o opencad-embed.js https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.2.0/embed/opencad-embed.js
+```
+
+```html
+<script type="module" src="/js/opencad-embed.js"></script>
+```
+
+MIT 조건대로 이 저장소의 저작권·허가 문구([LICENSE](LICENSE))를 함께 둡니다. 앱은 그대로 `https://gyutae-kim.github.io/`의 것을 띄웁니다.
+
+### 3. npm으로 받기
+
+npm 레지스트리에는 올리지 않았으므로 GitHub 태그로 받습니다(설치하는 컴퓨터에 git이 있어야 합니다).
+
+```bash
+npm install "opencad-site-kit@github:GyuTae-Kim/opencad-site-kit#v0.2.0"
+```
+
+```js
+import 'opencad-site-kit/embed';   // <opencad-viewer>를 등록한다. 번들에는 이 파일 하나만 들어간다
+```
+
+- 패키지는 런타임 의존이 없고 설치 때 빌드하지 않습니다. `jsdom`·`vite`는 선택 의존이라 함께 깔리지 않습니다
+- 형 선언이 들어 있어 TypeScript에서 `document.querySelector('opencad-viewer')`가 `OpenCadViewer`로 잡힙니다
+- 서버에서 페이지를 그리는 프레임워크(SSR)에서 가져와도 오류가 나지 않습니다. 브라우저가 아니면 요소를 등록하지 않고, 요소는 브라우저에서 그려집니다
+- 이벤트는 요소에 `addEventListener('opencad-done', …)`로 겁니다. React 같은 프레임워크에서는 ref로 요소를 잡아 겁니다
+
+### 4. iframe만 넣기
+
+스크립트를 넣을 수 없는 블로그 편집기 등에서는 앱 주소를 iframe으로 띄웁니다. 방문자가 그 안에서 자기 파일을 엽니다.
+파일을 넘기거나 열기 결과를 받으려면 1~3을 씁니다.
+
+```html
+<iframe src="https://gyutae-kim.github.io/opencad-step/en/" title="OpenCAD STEP viewer"
+  allow="fullscreen; clipboard-write" style="width:100%;height:520px;border:0"></iframe>
+```
+
+앱 주소는 `https://gyutae-kim.github.io/` 뒤에 `opencad-dwgdxf/` · `opencad-step/` · `opencad-skp/` · `opencad-nc/`, 언어를 바꾸려면 그 뒤에 `en/` · `ja/` · `zh-CN/` · `de/`를 붙입니다(한국어는 붙이지 않음).
+
+### 5. 앱을 직접 배포하기
+
+네 앱 저장소를 fork해 내 GitHub Pages 등에 올리고 요소에 `base="https://me.github.io/"`를 줍니다.
+저장소 이름을 바꿨을 때와 통계·언어 주소 설정을 바꾸는 법은 [docs/EMBED.md "앱을 직접 배포해 쓰기"](docs/EMBED.md#앱을-직접-배포해-쓰기)에 있습니다.
+
+### 알아 둘 것
+
+- **파일**: 내 페이지가 파일을 읽어 `postMessage`로 iframe 안의 앱에 넘기고, 앱은 브라우저 안에서만 엽니다. 앱은 다른 서버를 부르지 않습니다
+- **통계**: iframe 안의 앱은 방문 통계를 켜지 않고 동의 상자·서비스 워커(오프라인·새 판 알림)도 쓰지 않습니다. 내 사이트 방문이 OpenCAD 통계에 섞이지 않습니다
+- **느린 기기**: 앱이 30초 안에 준비되지 않으면 `opencad-error`(`timeout`)가 옵니다. 앱은 그 뒤에도 계속 불러오고, 준비되면 `opencad-ready`가 옵니다.
+  `src`로 준 파일은 그때 다시 받아 열고, `open()`으로 넘긴 파일은 `opencad-ready`를 받은 뒤 다시 넘깁니다
+- **브라우저**: 요소 스크립트는 Chrome·Edge 84, Firefox 90, Safari 15 이후에서 돕니다. 앱마다 더 필요한 기능(WebGL 등)은 각 앱 README에 있습니다
+- **CDN을 쓰지 않을 때**: jsDelivr를 쓰지 않으면 2번처럼 파일을 내 사이트에 둡니다. 앱 iframe은 `gyutae-kim.github.io`(또는 `base`)에서 뜹니다
+
+2026-11-19에 다른 출처 페이지(localhost)에서 위 1번 코드로 확인한 것:
+
+- jsDelivr의 `@v0.2.0` 파일이 태그 `v0.2.0`과 바이트까지 같고, CORS를 허용하며(`access-control-allow-origin: *`) 1년 동안 바뀌지 않는 파일로 캐시합니다
+- `integrity` 값이 맞으면 요소가 등록되고, 값이 다르면 브라우저가 스크립트를 막습니다
+- 네 앱 페이지는 다른 사이트가 iframe에 넣는 것을 막는 헤더(`X-Frame-Options`, CSP `frame-ancestors`)를 보내지 않습니다
+- 배포된 앱으로 DXF(일본어 화면)와 NC(독일어 화면) 파일 열기를 마쳤습니다(`opencad-done`). STEP·SKP는 준비 신호(`opencad-ready`)까지 확인했고,
+  파일 열기는 0.2.0을 적용할 때 네 앱 모두 다른 출처 페이지에서 확인했습니다
+- npm으로 받은 패키지에서 `opencad-site-kit/embed`가 이 파일 하나로 풀리고, Node(서버)에서 가져와도 오류가 없습니다
+
 ## 들어 있는 것
 
 | 가져오는 경로 | 내용 |
@@ -164,17 +279,6 @@ initAnalytics({
 | `AnalyticsConfig`(`measurementId`·`host`·`apps` 필수, `consentKey`·`formats`·`sourceTool`·`text`) | `initAnalytics` | 통계를 켜지 않음 |
 
 언어는 아직 한국어·영어·일본어·중국어(간체)·독일어 다섯 가지로 정해져 있습니다(사전 열쇠는 한국어 원문).
-
-## 다른 사이트에 넣기(임베드)
-
-OpenCAD 앱을 자기 웹페이지에 넣을 때는 스크립트 한 줄과 요소 하나면 됩니다. 자세한 것은 [docs/EMBED.md](docs/EMBED.md).
-
-```html
-<script type="module" src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.2.0/embed/opencad-embed.js"></script>
-<opencad-viewer src="/models/bracket.step" lang="en" style="height: 520px"></opencad-viewer>
-```
-
-파일은 그 페이지가 직접 읽어 iframe 안의 앱에 넘깁니다(앱은 남의 서버를 부르지 않습니다). 앱 쪽은 `acceptEmbeddedFiles`를 부르는 판부터 받습니다.
 
 ## 0.2.0으로 옮기기
 

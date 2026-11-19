@@ -15,6 +15,7 @@ OpenCAD의 네 앱(DWG·DXF 2D CAD, STEP·SketchUp·NC 3D 뷰어)을 블로그·
   `.nc`·`.gcode`·`.mpr`·`.pgi`·`.h` 등 → NC 뷰어
 - 크기는 CSS로 정합니다(기본 높이 480px, 너비는 부모에 맞춤)
 - 스크립트는 한 파일(의존 없음, MIT)이라 내 사이트에 복사해 올려도 됩니다. jsDelivr 주소의 `@v0.2.0`처럼 판을 고정해 씁니다
+- `integrity`(SRI)를 붙이는 법, npm으로 받는 법, iframe만 넣는 법은 [README "내 웹사이트에 OpenCAD 설치하기"](../README.md#내-웹사이트에-opencad-설치하기)에 있습니다
 
 방문자가 자기 파일을 열게 하려면 `src` 없이 `app`만 주거나, 파일 고르기를 이어 `open()`을 부릅니다.
 
@@ -53,7 +54,7 @@ OpenCAD의 네 앱(DWG·DXF 2D CAD, STEP·SketchUp·NC 3D 뷰어)을 블로그·
 | `fetch-failed` | 이 페이지가 `src`를 받지 못함(주소·CORS 확인) |
 | `unsupported` | 그 앱이 열지 않는 형식이거나 확장자로 앱을 고르지 못함 |
 | `too-large` | 앱이 한 번에 받는 크기(1 GiB)보다 큼 |
-| `timeout` | 30초 안에 앱이 답하지 않음(앱 주소·`base` 확인, 임베드를 받지 않는 옛 판) |
+| `timeout` | 30초 안에 앱이 답하지 않음(앱 주소·`base` 확인, 임베드를 받지 않는 옛 판). 앱이 늦게 준비되면 그 뒤 `opencad-ready`가 오고, `src` 파일은 그때 다시 받아 엽니다 — `open()`으로 넘긴 파일은 `opencad-ready` 뒤에 다시 넘깁니다 |
 | `bad-request` · `open-failed` | 넘긴 자료가 잘못됐거나 앱이 열기 중에 실패 |
 
 파일을 읽지 못한 까닭(깨진 파일 등)은 앱 화면이 알립니다. 이때도 `open()`은 풀립니다 — 앱이 열기를 마쳤다는 뜻입니다.
