@@ -359,6 +359,12 @@ npm test            # .runtime/variants가 있으면 원본과 견주는 시험�
 opencad-nc `eb2bd8c`, opencad-dwgdxf `eea2fcf`). 갈래마다 고친 쪽을 따랐습니다(여러 줄·이은 문장 번역, 화면 글 값 옮기기,
 첫 설치 때 다시 읽지 않기 등 — [docs/ADOPTION.md](docs/ADOPTION.md)의 "합치면서 바뀌는 동작").
 
+## 기여·보안
+
+- 판마다 바뀐 점: [CHANGELOG.md](CHANGELOG.md)
+- 버그 신고·PR 안내: [CONTRIBUTING.md](CONTRIBUTING.md)(한국어·영어)
+- 보안 문제는 공개 이슈 대신 [SECURITY.md](SECURITY.md)의 비공개 신고로 알려 주십시오
+
 ## 라이선스
 
 MIT

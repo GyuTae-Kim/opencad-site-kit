@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 내 웹사이트에 OpenCAD 설치하기
+    url: https://github.com/GyuTae-Kim/opencad-site-kit#%EB%82%B4-%EC%9B%B9%EC%82%AC%EC%9D%B4%ED%8A%B8%EC%97%90-opencad-%EC%84%A4%EC%B9%98%ED%95%98%EA%B8%B0
+    about: 스크립트 한 줄·파일 두기·npm·iframe·직접 배포 안내
+  - name: 임베드 요소 속성·이벤트·오류 코드
+    url: https://github.com/GyuTae-Kim/opencad-site-kit/blob/main/docs/EMBED.md
+    about: <opencad-viewer>의 src·app·lang·base, open(), opencad-ready·done·error
