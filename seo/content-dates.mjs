@@ -5,7 +5,7 @@ export const digest = (bytes) => createHash('sha256').update(bytes).digest('hex'
 
 // Dates describe content, not the build. Ignore generated Angular attributes,
 // component CSS, scripts, and dateModified itself so rebuilding is idempotent.
-export function contentFingerprint(html, assetBytes, pageUrl = 'https://gyutae-kim.github.io/') {
+export function contentFingerprint(html, assetBytes, pageUrl = 'http://localhost/') {
   const dom = new JSDOM(html, { url: pageUrl });
   try {
     const doc = dom.window.document;

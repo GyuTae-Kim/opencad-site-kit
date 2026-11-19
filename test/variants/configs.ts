@@ -8,6 +8,7 @@ import type { Plugin } from 'vite';
 import { siteLocalization } from '../../i18n/localization-plugin.mjs';
 import { serviceWorker, templateSource, type Precache, type ServiceWorkerValues } from '../../pwa/sw-plugin.mjs';
 import { defineSite, type ContentHistory, type Site, type SiteMetadata } from '../../seo/site-metadata.mjs';
+import { OPENCAD_SITE } from '../../presets/opencad.mjs';
 import { siteMetadata } from '../../seo/site-plugin.mjs';
 
 export const APPS = ['step', 'skp', 'nc', 'dwg'] as const;
@@ -56,12 +57,12 @@ export async function kitSetup(app: App, appDir: string, keptDir = appDir): Prom
   if (app === 'nc') {
     const { fileHandling } = (await import(join(keptDir, 'tools/site-metadata.mjs'))) as { fileHandling: (extensions: readonly string[]) => Record<string, unknown> };
     const { NC_EXTENSIONS } = (await import(join(keptDir, 'src/extensions.ts'))) as { NC_EXTENSIONS: string[] };
-    site = defineSite({ metadata, history, manifest: {
+    site = defineSite({ metadata, history, ...OPENCAD_SITE, manifest: {
       source: join(appDir, 'site/manifest.webmanifest'), emitDefault: true, links: 'metadata',
       extend: (manifest) => ({ ...manifest, ...fileHandling(NC_EXTENSIONS) }),
     } });
   } else {
-    site = defineSite({ metadata, history, manifest: { source: join(appDir, 'public/manifest.webmanifest') } });
+    site = defineSite({ metadata, history, ...OPENCAD_SITE, manifest: { source: join(appDir, 'public/manifest.webmanifest') } });
   }
   return { site, plugins: [siteLocalization(site), siteMetadata(site), serviceWorker({ source: await swSource(app, appDir, keptDir), ...swOptions(app) })] };
 }

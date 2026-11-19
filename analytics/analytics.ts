@@ -1,33 +1,81 @@
 /** First-party GA4 adapter. Never pass file names, model data, URLs or exception text to events. */
-export type AnalyticsTool = 'portfolio' | 'dwgdxf' | 'nc' | 'step' | 'skp';
+import { isFramed } from '../embed/context';
+
+/** Name of a page or app in AnalyticsConfig.apps (OpenCAD: portfolio, dwgdxf, nc, step, skp). */
+export type AnalyticsTool = string;
 export type InputKind = 'local' | 'sample' | 'url';
 export type OpenError = 'size_limit' | 'read_error' | 'fetch_error' | 'unsupported' | 'empty' | 'parse_error';
 export type ExportFormat = 'png' | 'jpg' | 'bmp' | 'pdf' | 'svg' | 'dxf' | 'dwg' | 'stl' | 'obj' | 'csv';
-export type ContentGroup = '포트폴리오' | '프로젝트' | '연구' | 'OpenCAD 소개' | 'OpenCAD 가이드' | 'OpenCAD 앱' | '개발 노트' | '연락' | '오류';
+export type ContentGroup = string;
 
-const HOST = 'gyutae-kim.github.io';
-const CONSENT_KEY = 'opencad.analytics-consent.v1';
-const PATHS: Record<AnalyticsTool, string> = { portfolio: '/', dwgdxf: '/opencad-dwgdxf/', nc: '/opencad-nc/', step: '/opencad-step/', skp: '/opencad-skp/' };
-const TITLES: Record<AnalyticsTool, string> = { portfolio: '포트폴리오 | 홈', dwgdxf: 'OpenCAD | DWG/DXF 캐드', nc: 'OpenCAD | NC 뷰어', step: 'OpenCAD | STEP 뷰어', skp: 'OpenCAD | SKP 뷰어' };
-const FORMATS = new Set(['skp', 'step', 'stp', 'p21', 'stpz', 'stpx', 'zip', 'gz', 'dxf', 'dwg', 'nc', 'gcode', 'ngc', 'h', 'mpr', 'pgi', 'xml']);
+/** A public page identity: GA never sees the document title or the real address. */
+export interface AnalyticsPage {
+  /** Public entry path ending in "/". Language pages are one level below it (/app/en/). */
+  path: string;
+  /** Public page title recorded instead of the document title. */
+  title: string;
+  /** content_group (default: "app", or "site" for a site). */
+  group?: ContentGroup;
+  /** A routed site: pages are reported with trackPage, including the first one. */
+  site?: boolean;
+}
+
+export interface ConsentText {
+  label: string;
+  message: string;
+  allow: string;
+  limited: string;
+  deny: string;
+}
+
+/** Everything that belongs to one site. OpenCAD's values: OPENCAD_ANALYTICS in opencad-site-kit/presets/opencad. */
+export interface AnalyticsConfig {
+  /** GA4 measurement ID (G-...). */
+  measurementId: string;
+  /** Collect only on https pages of this host; also the cookie domain. */
+  host: string;
+  /** Public identities by tool name. Links to another non-site entry on the host send viewer_open. */
+  apps: Readonly<Record<string, AnalyticsPage>>;
+  /** localStorage key of the visitor's choice. */
+  consentKey?: string;
+  /** Extensions recorded as file_format (others become "other"). */
+  formats?: readonly string[];
+  /** target_tool for a clicked source repository link (source_open), or null. */
+  sourceTool?: (url: URL) => string | null;
+  /** Consent box copy (default Korean). */
+  text?: Partial<ConsentText>;
+}
+
+const LANGUAGE = 'en|ja|zh-CN|de';
+const DEFAULT_FORMATS = ['skp', 'step', 'stp', 'p21', 'stpz', 'stpx', 'zip', 'gz', 'dxf', 'dwg', 'nc', 'gcode', 'ngc', 'h', 'mpr', 'pgi', 'xml'];
+const DEFAULT_TEXT: ConsentText = {
+  label: '방문 통계 설정',
+  message: '허용하면 쿠키로 유입·기능 통계를 수집합니다. 거절하면 쿠키 없이 기본 방문 신호만 Google Analytics로 전송합니다. 파일명·내용·입력 주소는 보내지 않습니다. 푸터나 앱 메뉴에서 변경할 수 있습니다.',
+  allow: '허용',
+  limited: '거절 (기본 방문만)',
+  deny: '수집 안 함',
+};
 type AnalyticsWindow = Window & { dataLayer?: unknown[]; gtag?: (...args: unknown[]) => void };
+interface Site { host: string; apps: Readonly<Record<string, AnalyticsPage>>; consentKey: string; formats: ReadonlySet<string>; sourceTool?: (url: URL) => string | null; text: ConsentText }
+let site: Site | undefined;
+const DEFAULT_FORMAT_SET: ReadonlySet<string> = new Set(DEFAULT_FORMATS);
 let active: { id: string; tool: AnalyticsTool } | undefined;
 let started = false;
 // Legacy "denied" keeps its original meaning: no Google requests at all.
 type Consent = 'granted' | 'limited' | 'denied' | null;
 let consent: Consent = null;
 let pagePath = '/';
-let pageTitle = TITLES.portfolio;
-let pageGroup: ContentGroup = '포트폴리오';
+let pageTitle = '';
+let pageGroup: ContentGroup = '';
 let pageReferrer = '';
 let lastPage = '';
 let pageReady = false;
 
 /** Only published app entry paths may become page identities. */
 function publicAppPath(tool: AnalyticsTool, pathname: string): string {
-  const root = PATHS[tool];
+  const root = site!.apps[tool]!.path;
   if (!pathname.startsWith(root)) return root;
-  const language = pathname.slice(root.length).match(/^(en|ja|zh-CN|de)(?:\/(?:index\.html)?)?$/)?.[1];
+  const language = pathname.slice(root.length).match(new RegExp(`^(${LANGUAGE})(?:\\/(?:index\\.html)?)?$`))?.[1];
   return language ? `${root}${language}/` : root;
 }
 
@@ -47,8 +95,10 @@ function referrer(): string {
 }
 
 function fields(): Record<string, string> {
-  const pageLanguage = pagePath.match(/^\/(?:opencad-(?:dwgdxf|nc|step|skp)\/)?(en|ja|zh-CN|de)(?:\/|$)/)?.[1] ?? 'ko';
-  return { tool: active!.tool, page_title: pageTitle, content_group: pageGroup, page_language: pageLanguage, page_location: `https://${HOST}${pagePath}${consent === 'granted' ? campaignQuery(location.search) : ''}`, page_referrer: consent === 'granted' ? pageReferrer : '' };
+  const root = site!.apps[active!.tool]!.path;
+  const relative = pagePath.startsWith(root) ? pagePath.slice(root.length) : pagePath.replace(/^\//, '');
+  const pageLanguage = relative.match(new RegExp(`^(${LANGUAGE})(?:\\/|$)`))?.[1] ?? 'ko';
+  return { tool: active!.tool, page_title: pageTitle, content_group: pageGroup, page_language: pageLanguage, page_location: `https://${site!.host}${pagePath}${consent === 'granted' ? campaignQuery(location.search) : ''}`, page_referrer: consent === 'granted' ? pageReferrer : '' };
 }
 
 function send(name: string, params: Record<string, string | number> = {}): void {
@@ -76,7 +126,7 @@ function start(): void {
   w.gtag('js', new Date());
   w.gtag('set', { ...fields(), allow_google_signals: false, allow_ad_personalization_signals: false, ads_data_redaction: true, url_passthrough: false });
   // Configure once per document. Route metadata lives in global set/event parameters.
-  w.gtag('config', active.id, { send_page_view: false, cookie_domain: HOST, cookie_path: '/', allow_google_signals: false, allow_ad_personalization_signals: false });
+  w.gtag('config', active.id, { send_page_view: false, cookie_domain: site!.host, cookie_path: '/', allow_google_signals: false, allow_ad_personalization_signals: false });
   const script = document.createElement('script');
   script.id = 'opencad-ga4';
   script.async = true;
@@ -91,12 +141,12 @@ function storedConsent(value: string | null): Consent {
 }
 
 function choice(): Consent {
-  try { return storedConsent(localStorage.getItem(CONSENT_KEY)); } catch { return null; }
+  try { return storedConsent(localStorage.getItem(site!.consentKey)); } catch { return null; }
 }
 
 function choose(value: Consent, persist = true): void {
   if (persist) {
-    try { if (value) localStorage.setItem(CONSENT_KEY, value); else localStorage.removeItem(CONSENT_KEY); } catch { /* Session-only choice. */ }
+    try { if (value) localStorage.setItem(site!.consentKey, value); else localStorage.removeItem(site!.consentKey); } catch { /* Session-only choice. */ }
   }
   const previous = consent;
   consent = value;
@@ -106,7 +156,7 @@ function choose(value: Consent, persist = true): void {
     for (const cookie of document.cookie.split(';')) {
       const key = cookie.trim().split('=')[0]!;
       if (/^_ga(?:_|$)/.test(key)) {
-        document.cookie = `${key}=; Max-Age=0; path=/; domain=${HOST}`;
+        document.cookie = `${key}=; Max-Age=0; path=/; domain=${site!.host}`;
         document.cookie = `${key}=; Max-Age=0; path=/`;
       }
     }
@@ -128,7 +178,8 @@ function controls(expanded: boolean): void {
   if (!expanded) return;
   const box = document.createElement('aside');
   box.id = 'opencad-analytics-choice';
-  box.setAttribute('aria-label', '방문 통계 설정');
+  const copy = site!.text;
+  box.setAttribute('aria-label', copy.label);
   box.style.cssText = 'position:fixed;bottom:12px;right:12px;z-index:10000;box-sizing:border-box;width:340px;max-width:calc(100vw - 24px);padding:10px;border:1px solid #888;border-radius:6px;background:Canvas;color:CanvasText;font:13px/1.5 system-ui;box-shadow:0 2px 8px #0002';
   const button = (label: string, run: () => void): HTMLButtonElement => {
     const b = document.createElement('button');
@@ -139,8 +190,8 @@ function controls(expanded: boolean): void {
   };
   const text = document.createElement('p');
   text.style.margin = '0 0 6px';
-  text.textContent = '허용하면 쿠키로 유입·기능 통계를 수집합니다. 거절하면 쿠키 없이 기본 방문 신호만 Google Analytics로 전송합니다. 파일명·내용·입력 주소는 보내지 않습니다. 푸터나 앱 메뉴에서 변경할 수 있습니다.';
-  box.append(text, button('허용', () => choose('granted')), button('거절 (기본 방문만)', () => choose('limited')), button('수집 안 함', () => choose('denied')));
+  text.textContent = copy.message;
+  box.append(text, button(copy.allow, () => choose('granted')), button(copy.limited, () => choose('limited')), button(copy.deny, () => choose('denied')));
   document.body.append(box);
 }
 
@@ -149,33 +200,52 @@ export function showAnalyticsSettings(): void {
   if (active) controls(true);
 }
 
-/** Published pages only; no Google request until the visitor makes a choice. */
-export function initAnalytics(id: string, tool: AnalyticsTool): void {
-  try { initialize(id, tool); } catch { /* Tracking failures never prevent opening the app. */ }
+/**
+ * Published pages of config.host only; no Google request until the visitor makes a choice.
+ * Never inside a frame: an app embedded in another site does not count that site's visitors or ask them for consent.
+ */
+export function initAnalytics(config: AnalyticsConfig, tool: AnalyticsTool): void {
+  try { initialize(config, tool); } catch { /* Tracking failures never prevent opening the app. */ }
 }
 
-function initialize(id: string, tool: AnalyticsTool): void {
-  if (typeof window === 'undefined' || active || location.hostname !== HOST || location.protocol !== 'https:' || !/^G-[A-Z0-9]+$/.test(id)) return;
+function configured(config: AnalyticsConfig): Site {
+  if (!config || typeof config !== 'object') throw new Error('initAnalytics: a site configuration is required.');
+  const apps = config.apps ?? {};
+  for (const page of Object.values(apps)) if (typeof page?.path !== 'string' || !/^\/(?:.*\/)?$/.test(page.path) || typeof page.title !== 'string') throw new Error('initAnalytics: each app needs a path ending in "/" and a title.');
+  return {
+    host: config.host, apps, consentKey: config.consentKey ?? 'analytics-consent.v1',
+    formats: new Set((config.formats ?? DEFAULT_FORMATS).map((format) => format.toLowerCase())), sourceTool: config.sourceTool,
+    text: { ...DEFAULT_TEXT, ...config.text },
+  };
+}
+
+function initialize(config: AnalyticsConfig, tool: AnalyticsTool): void {
+  if (typeof window === 'undefined' || active || isFramed()) return;
+  const settings = configured(config);
+  const id = config.measurementId;
+  const page = settings.apps[tool];
+  if (!page || location.hostname !== settings.host || location.protocol !== 'https:' || typeof id !== 'string' || !/^G-[A-Z0-9]+$/.test(id)) return;
   const nav = navigator as Navigator & { globalPrivacyControl?: boolean };
   if (nav.globalPrivacyControl || nav.doNotTrack === '1') return;
+  site = settings;
   active = { id, tool };
-  pagePath = publicAppPath(tool, location.pathname); pageTitle = TITLES[tool];
-  pageGroup = tool === 'portfolio' ? '포트폴리오' : 'OpenCAD 앱';
+  pagePath = publicAppPath(tool, location.pathname); pageTitle = page.title;
+  pageGroup = page.group ?? (page.site ? 'site' : 'app');
   pageReferrer = referrer();
-  pageReady = tool !== 'portfolio';
+  pageReady = !page.site;
   choose(choice(), false);
   window.addEventListener('storage', (event) => {
-    if (event.key === CONSENT_KEY || event.key === null) choose(event.key === null ? null : storedConsent(event.newValue), false);
+    if (event.key === settings.consentKey || event.key === null) choose(event.key === null ? null : storedConsent(event.newValue), false);
   });
   // App localization replaces the URL and emits a non-bubbling event at #app.
   // Capture it without changing each consumer or trusting event detail as data.
   document.addEventListener('languagechange', () => {
-    if (!active || active.tool === 'portfolio') return;
+    if (!active || settings.apps[active.tool]!.site) return;
     const nextPath = publicAppPath(active.tool, location.pathname);
     if (nextPath === pagePath) return;
     // Until the first recorded visit, retain the original external referrer.
     // A pre-consent language change must not turn organic traffic into direct.
-    if (lastPage) pageReferrer = `https://${HOST}${lastPage}`;
+    if (lastPage) pageReferrer = `https://${settings.host}${lastPage}`;
     pagePath = nextPath;
     pageView();
   }, true);
@@ -184,31 +254,32 @@ function initialize(id: string, tool: AnalyticsTool): void {
     if (!link) return;
     try {
       const url = new URL(link.href);
-      const tool = (Object.keys(PATHS) as AnalyticsTool[]).find((key) => key !== 'portfolio' && url.pathname.replace(/\/$/, '') === PATHS[key].replace(/\/$/, ''));
-      if (url.hostname === HOST && tool) send('viewer_open', { target_tool: tool });
-      else if (url.hostname === 'github.com' && /^\/GyuTae-Kim\/(?:opencad-(?:dwgdxf|nc|step|skp|viewer3d)|GyuTae-Kim.github.io)\/?$/i.test(url.pathname)) {
-        const repo = url.pathname.split('/')[2]!.toLowerCase();
-        send('source_open', { target_tool: repo.startsWith('opencad-') ? repo.slice(8) : 'portfolio' });
+      const target = Object.keys(settings.apps).find((key) => !settings.apps[key]!.site && url.pathname.replace(/\/$/, '') === settings.apps[key]!.path.replace(/\/$/, ''));
+      if (url.hostname === settings.host && target) send('viewer_open', { target_tool: target });
+      else {
+        const source = settings.sourceTool?.(url);
+        if (source) send('source_open', { target_tool: source });
       }
     } catch { /* Non-HTTP links are irrelevant. */ }
   });
 }
 
 /** Call after SEO updates on an Angular navigation; never pass document-specific titles. */
-export function trackPage(path: string, title: string, group: ContentGroup = '포트폴리오'): void {
-  if (!active || active.tool !== 'portfolio') return;
+export function trackPage(path: string, title: string, group?: ContentGroup): void {
+  const page = active && site!.apps[active.tool];
+  if (!page?.site) return;
   const nextPath = path.startsWith('/') ? path.split(/[?#]/)[0]! : '/404';
-  if (pageReady && pagePath !== nextPath) pageReferrer = `https://${HOST}${pagePath}`;
+  if (pageReady && pagePath !== nextPath) pageReferrer = `https://${site!.host}${pagePath}`;
   pagePath = nextPath;
   pageTitle = title;
-  pageGroup = group;
+  pageGroup = group ?? page.group ?? 'site';
   pageReady = true;
   pageView();
 }
 
 export interface OpenAttempt { success(): void; error(code: OpenError): void }
 export function beginOpen(input: InputKind, format: string): OpenAttempt {
-  const safeFormat = FORMATS.has(format.toLowerCase()) ? format.toLowerCase() : 'other';
+  const safeFormat = (site?.formats ?? DEFAULT_FORMAT_SET).has(format.toLowerCase()) ? format.toLowerCase() : 'other';
   const startAt = performance.now();
   const params = { input_kind: input, file_format: safeFormat };
   let done = false;

@@ -1,12 +1,42 @@
 /**
- * OpenCAD 앱 공용 번역기. 한국어 원문을 열쇠로 앱 사전(en·ja·zh-CN·de)에서 찾고, {0} 자리가 있는 틀은 잡은 값을 그대로 끼운다.
+ * 공용 번역기. 한국어 원문을 열쇠로 앱 사전(en·ja·zh-CN·de)에서 찾고, {0} 자리가 있는 틀은 잡은 값을 그대로 끼운다.
  * 앱은 site/i18n-core.mjs에서 configureI18n({ metadata })로 자기 사이트 정보(site/metadata.json)를 넘기고 사전은 registerCatalog로 넣는다.
+ * 언어 주소를 바꿀 경로(routes)와 거꾸로 찾지 않을 이름(untranslated)도 설정으로 받는다 — OpenCAD 값은 presets/opencad.mjs.
  */
 let siteMetadata = null;
-/** 이 앱의 사이트 정보(site/metadata.json). 주소 계산(currentLanguage·languageUrl)과 metadataForLanguage가 쓴다 */
-export function configureI18n({ metadata }) {
+let siteRoutes = null;
+let routeInput = null;
+let keepNames = [];
+const ROOT = /^\/(?:.*\/)?$/;
+function checkRoot(path, what) {
+  if (typeof path !== 'string' || !ROOT.test(path)) throw new Error(`configureI18n: ${what} must be a path that starts and ends with "/": ${path}`);
+  return path;
+}
+/**
+ * 이 앱의 사이트 정보(site/metadata.json)와 주소 규칙. 주소 계산(currentLanguage·languageUrl)과 metadataForLanguage가 쓴다.
+ * routes를 주지 않으면 metadata.url의 경로 하나만 앱 뿌리로 본다(언어 페이지는 그 아래 en/ …). 같은 사이트 정보로 다시 부를 때
+ * (빌드의 defineSite 등) routes·untranslated를 빼면 앞서 준 것을 그대로 둔다.
+ */
+export function configureI18n({ metadata, routes, untranslated }) {
   if (!metadata || typeof metadata.url !== 'string') throw new Error('configureI18n: metadata.url is required.');
+  const own = new URL(metadata.url).pathname;
+  const again = siteMetadata?.url === metadata.url;
+  const given = routes ?? (again ? routeInput : null) ?? { apps: [own] };
+  untranslated ??= again ? keepNames : [];
+  const apps = (given.apps ?? []).map(path => checkRoot(path, 'routes.apps'));
+  const aliases = Object.entries(given.aliases ?? {}).map(([from, to]) => [checkRoot(from, 'routes.aliases'), checkRoot(to, 'routes.aliases')]);
+  let site = null;
+  if (given.site) {
+    const sections = given.site.sections ?? [];
+    if (!sections.every(name => typeof name === 'string' && /^[^/?#]+$/.test(name))) throw new Error('configureI18n: routes.site.sections must be path segments.');
+    site = { root: checkRoot(given.site.root ?? '/', 'routes.site.root'), sections };
+  }
+  if (!Array.isArray(untranslated) || !untranslated.every(name => typeof name === 'string')) throw new Error('configureI18n: untranslated must be a list of names.');
   siteMetadata = metadata;
+  routeInput = given;
+  siteRoutes = { apps, aliases, site };
+  keepNames = untranslated.map(name => name.trim());
+  reverse = null;
 }
 function site() {
   if (!siteMetadata) throw new Error('Call configureI18n({ metadata }) before using the site translator.');
@@ -25,7 +55,7 @@ const SEPARATED = /(?:^|\s)[·|—](?:\s|$)|\n/;
 const hangulCount = text => (text.match(/[가-힣]/g) ?? []).length;
 let reverse = null;
 export function sourceMessage(value) {
-  if (['OpenCAD','Sean Kim','GitHub'].includes(value.trim())) return value;
+  if (keepNames.includes(value.trim())) return value;
   if (!reverse) { reverse = new Map(); for (const catalog of Object.values(catalogs)) for (const [key,text] of Object.entries(catalog)) if (text) reverse.set(normalize(text),key); }
   const source = reverse.get(normalize(value));
   return source ? (value.match(/^\s*/)?.[0] ?? '') + source + (value.match(/\s*$/)?.[0] ?? '') : value;
@@ -91,16 +121,33 @@ export function currentLanguage(url) {
   return languages.find(item => item.code === segments.at(-1))?.code
     ?? languages.find(item => item.code === parsed.searchParams.get('lang'))?.code ?? 'ko';
 }
+const LANGUAGE_SEGMENT = 'en|ja|zh-CN|de';
+const escapeRegExp = text => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+/** 앱 뿌리(언어는 그 아래 한 단계)에 맞는 지금 경로. 이 컴퓨터(개발 서버)에서는 사이트 규칙이 없으면 "/"도 앱 뿌리로 본다 */
+function appRoute(pathname, local) {
+  const { apps, aliases, site } = siteRoutes;
+  const roots = [...apps.map(path => [path, path]), ...aliases];
+  if (local && !site && !roots.some(([path]) => path === '/')) roots.push(['/', '/']);
+  for (const [path, target] of roots)
+    if (new RegExp('^' + escapeRegExp(path) + '(?:' + LANGUAGE_SEGMENT + ')?\\/?(?:index\\.html)?$').test(pathname)) return target;
+  return null;
+}
+/**
+ * url의 language 쪽 주소. 설정한 앱 뿌리(routes.apps·aliases)는 뿌리/언어/, 사이트(routes.site)는 뿌리/언어/쪽 꼴로 바꾸고
+ * 인자와 조각(#)은 둔다(?lang=만 뺀다). 다른 사이트와 규칙 밖의 주소는 그대로 돌려준다.
+ */
 export function languageUrl(raw, language = 'ko') {
   const url = new URL(raw, site().url);
-  if (url.origin !== new URL(site().url).origin && !['127.0.0.1','localhost'].includes(url.hostname)) return raw;
-  const app = url.pathname.match(/^\/(2dcad-viewer|opencad-(?:dwgdxf|skp|step|nc))\/(?:en|ja|zh-CN|de)?\/?(?:index\.html)?$/);
+  const local = ['127.0.0.1','localhost'].includes(url.hostname);
+  if (url.origin !== new URL(site().url).origin && !local) return raw;
+  const app = appRoute(url.pathname, local);
+  const section = siteRoutes.site;
   if (app) {
-    const name = app[1] === '2dcad-viewer' ? 'opencad-dwgdxf' : app[1];
-    url.pathname = '/' + name + '/' + (language === 'ko' ? '' : language + '/');
-  } else if (url.pathname === '/' || /^\/(?:en|ja|zh-CN|de)(?:\/|$)/.test(url.pathname) || /^\/(?:opencad|portfolio|research|contact|notes)(?:\/|$)/.test(url.pathname)) {
-    const path = url.pathname.replace(/^\/(?:en|ja|zh-CN|de)(?=\/|$)/,'') || '/';
-    url.pathname = (language === 'ko' ? '' : '/' + language) + path;
+    url.pathname = app + (language === 'ko' ? '' : language + '/');
+  } else if (section && (url.pathname === section.root
+    || new RegExp('^' + escapeRegExp(section.root) + '(?:' + [LANGUAGE_SEGMENT, ...section.sections.map(escapeRegExp)].join('|') + ')(?:\\/|$)').test(url.pathname))) {
+    const rest = url.pathname.slice(section.root.length).replace(new RegExp('^(?:' + LANGUAGE_SEGMENT + ')(?:\\/|$)'), '');
+    url.pathname = section.root + (language === 'ko' ? '' : language + '/') + rest;
   } else return raw;
   if (url.searchParams.has('lang')) url.searchParams.delete('lang');
   return url.href;

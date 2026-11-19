@@ -13,9 +13,11 @@ const escape = (text) => String(text).replace(/&/g, '&amp;').replace(/"/g, '&quo
  *   - emitDefault: 한국어 manifest.webmanifest도 빌드가 쓴다(원본이 public/ 밖에 있을 때). 아니면 public/이 그대로 복사한다
  *   - links: 'html'(index.html에 적은 <link rel="manifest">·홈 화면 이름을 언어 페이지마다 바꾼다) 또는
  *     'metadata'(검색 정보 자리에 언어별 앱 정보 링크와 홈 화면 이름을 함께 넣는다)
+ * - routes·untranslated: 번역기의 주소 규칙과 거꾸로 찾지 않을 이름(configureI18n과 같은 것, OpenCAD는 presets/opencad의 OPENCAD_SITE).
+ *   주지 않으면 site/i18n-core.mjs가 같은 사이트 정보로 이미 준 것을 그대로 쓴다
  */
-export function defineSite({ metadata, history, manifest = null }) {
-  configureI18n({ metadata });
+export function defineSite({ metadata, history, manifest = null, routes, untranslated }) {
+  configureI18n({ metadata, routes, untranslated });
   const options = manifest && { emitDefault: false, links: 'html', ...manifest };
   const site = {
     metadata, history, manifest: options,

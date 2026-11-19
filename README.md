@@ -1,7 +1,8 @@
 # OpenCAD 사이트 도구
 
 OpenCAD 앱(STEP·SKP·NC·DWG·DXF)이 함께 쓰는 사이트 계층 도구입니다. 다섯 언어 페이지, 검색·공유 정보와 사이트맵, 내용 수정일,
-홈 화면 앱 정보와 오프라인 서비스 워커, 방문 통계, 모바일 성능 측정을 한곳에 모았습니다.
+홈 화면 앱 정보와 오프라인 서비스 워커, 방문 통계, 모바일 성능 측정, 다른 사이트에 앱을 넣는 임베드를 한곳에 모았습니다.
+사이트마다 다른 값(통계 ID·호스트·앱 경로·언어 주소 규칙)은 코드에 두지 않고 설정으로 받습니다 — OpenCAD의 값은 `presets/opencad.mjs` 한 파일에 있습니다.
 예전에는 같은 파일을 앱 저장소마다 복사해 써서, 공용 번역기 고침을 저장소마다 따로 옮겨야 했고 DWG만 갈래가 달라져 있었습니다.
 
 함께 쓰는 저장소: [opencad-step](https://github.com/GyuTae-Kim/opencad-step) · [opencad-skp](https://github.com/GyuTae-Kim/opencad-skp) ·
@@ -11,18 +12,22 @@ OpenCAD 앱(STEP·SKP·NC·DWG·DXF)이 함께 쓰는 사이트 계층 도구입
 
 | 가져오는 경로 | 내용 |
 |---|---|
-| `opencad-site-kit/i18n/core` | 공용 번역기: 다섯 언어, 사전 등록, `translate`(틀 `{0}`의 값은 그대로 — `uiParameters`면 화면 글 값도 옮김), 줄바꿈·` · `로 이은 글은 조각마다, 언어 주소(`currentLanguage`·`languageUrl`), 언어별 사이트 정보. 앱은 `configureI18n({ metadata })`로 사이트 정보를 넘깁니다 |
+| `opencad-site-kit/i18n/core` | 공용 번역기: 다섯 언어, 사전 등록, `translate`(틀 `{0}`의 값은 그대로 — `uiParameters`면 화면 글 값도 옮김), 줄바꿈·` · `로 이은 글은 조각마다, 언어 주소(`currentLanguage`·`languageUrl`), 언어별 사이트 정보. 앱은 `configureI18n({ metadata, routes, untranslated })`로 사이트 정보와 언어 주소 규칙을 넘깁니다 |
 | `opencad-site-kit/i18n/localization-plugin` | Vite 플러그인 `siteLocalization(site)`: 빌드한 `index.html`을 `<언어>/index.html`로 옮기고(글·속성·링크·언어 고르기 줄·`<base href="../">`), 개발 서버는 주소의 언어로 |
 | `opencad-site-kit/i18n/check-i18n` | 빌드 뒤 확인: 사전 열쇠·`{0}` 자리, 언어 페이지·언어 대안, 홈 화면 앱 정보(시작 주소·id·범위·공유 받기·아이콘), 서비스 워커가 페이지를 담는지 |
 | `opencad-site-kit/i18n/language-menu` | 언어 고르기 메뉴(브라우저, TypeScript) |
-| `opencad-site-kit/seo/site-metadata` | `defineSite({ metadata, history, manifest })`: 앱 하나의 사이트 설정. 검색·공유 태그와 구조화 자료, 사이트맵, 언어별 앱 정보 |
+| `opencad-site-kit/seo/site-metadata` | `defineSite({ metadata, history, manifest, routes })`: 앱 하나의 사이트 설정. 검색·공유 태그와 구조화 자료, 사이트맵, 언어별 앱 정보 |
 | `opencad-site-kit/seo/site-plugin` | Vite 플러그인 `siteMetadata(site)`: `<!-- site-metadata -->` 자리에 검색 정보, `sitemap.xml`·`.nojekyll`·언어별 `manifest.webmanifest`, 개발 서버에서도 같은 것 |
 | `opencad-site-kit/seo/content-dates`, `app-fingerprint`, `check-seo`, `update-content-dates`, `seo-test` | 내용 수정일: 앱 내용 지문(첫 쪽 내용 + 스크립트·스타일), 바뀌었을 때만 날짜 올리기, 빌드 뒤 검색 정보 확인 |
 | `opencad-site-kit/seo/compare-dist` | 두 빌드 결과 견주기(자산 이름의 내용 지문은 맞춘 뒤) — 이 도구를 적용하기 전·후 확인용 |
 | `opencad-site-kit/pwa/manifest` | 언어별 앱 정보(`localizeManifest` — 이름·설명을 옮기고 시작 주소는 그 언어 페이지, 범위·아이콘은 앱 뿌리, `id`는 두지 않음) |
 | `opencad-site-kit/pwa/sw-plugin` | Vite 플러그인 `serviceWorker(options)`: 빌드 끝에 `dist/sw.js`. 미리 담을 목록과 판 이름(내용 지문)을 정하고 워커 본문은 앱이 줍니다(`templateSource(파일)` 또는 함수) |
 | `opencad-site-kit/pwa/client` | 서비스 워커 등록과 새 판 알림, 데스크톱 파일 열기(launchQueue), 공유 받기 주소 인자(브라우저, TypeScript) |
-| `opencad-site-kit/analytics`, `opencad-site-kit/analytics/config` | 방문 통계(GA4, 고르기 전에는 아무것도 보내지 않음)와 측정 ID(브라우저, TypeScript) |
+| `opencad-site-kit/analytics` | 방문 통계(GA4, 고르기 전에는 아무것도 보내지 않음, iframe 안에서는 꺼짐). `initAnalytics(설정, 앱 이름)` — 측정 ID·호스트·공개 경로·제목을 설정으로 받습니다(브라우저, TypeScript) |
+| `opencad-site-kit/presets/opencad` | OpenCAD 사이트의 값: `OPENCAD_ANALYTICS`(통계), `OPENCAD_SITE`(언어 주소 규칙·번역 제외 이름). 다른 사이트는 이 파일을 본보기로 자기 값을 만듭니다 |
+| `opencad-site-kit/analytics/config` | `OPENCAD_ANALYTICS` 다시 내보내기(예전 `GA4_MEASUREMENT_ID`도 남김) |
+| `opencad-site-kit/embed/app` | 앱 쪽 임베드: `acceptEmbeddedFiles(open, { accept })` — iframe에 넣은 앱이 부모 페이지가 넘긴 파일을 연다(브라우저, TypeScript) |
+| `opencad-site-kit/embed` | 호스트 쪽 임베드: `<opencad-viewer>` 요소(의존 없는 한 파일 `embed/opencad-embed.js`) — [docs/EMBED.md](docs/EMBED.md) |
 | `opencad-site-kit/perf/*` | 모바일 성능 비교(압축해서 주는 미리 보기 서버, Lighthouse 결과 가운데값 표, 앱 예산 파일과 견주는 성능 예산 검사) |
 | `opencad-site` 명령 | 앱 npm 스크립트가 부르는 명령(아래) |
 
@@ -30,12 +35,13 @@ OpenCAD 앱(STEP·SKP·NC·DWG·DXF)이 함께 쓰는 사이트 계층 도구입
 
 ## 앱에서 쓰기
 
-npm에 올리지 않고 GitHub 의존으로 씁니다. 빌드 때만 쓰므로 `devDependencies`에 둡니다(`npm install -D "opencad-site-kit@github:GyuTae-Kim/opencad-site-kit#<태그>"`). 브라우저 모듈은 TypeScript 원본 그대로 내보내므로 Vite 같은 번들러와 `moduleResolution: "bundler"`가 필요합니다.
+npm에 올리지 않고 GitHub 의존으로 씁니다. 빌드 때만 쓰므로 `devDependencies`에 둡니다(`npm install -D "opencad-site-kit@github:GyuTae-Kim/opencad-site-kit#<태그>"`).
+아래 예는 OpenCAD 앱의 것입니다. 다른 사이트는 [다른 사이트에서 쓰기](#다른-사이트에서-쓰기)를 봅니다. 브라우저 모듈은 TypeScript 원본 그대로 내보내므로 Vite 같은 번들러와 `moduleResolution: "bundler"`가 필요합니다.
 빌드 도구(`.mjs`)는 Node 22와 Vite 7에서 돌고, 형 선언(`.d.mts`)이 함께 있습니다. `jsdom`·`vite`는 앱이 이미 가진 것을 씁니다.
 
 ```json
 "devDependencies": {
-  "opencad-site-kit": "github:GyuTae-Kim/opencad-site-kit#v0.1.6"
+  "opencad-site-kit": "github:GyuTae-Kim/opencad-site-kit#v0.2.0"
 },
 "scripts": {
   "build": "tsc --noEmit && vite build && npm run check:seo && npm run check:i18n",
@@ -46,14 +52,17 @@ npm에 올리지 않고 GitHub 의존으로 씁니다. 빌드 때만 쓰므로 `
 }
 ```
 
-공용 번역기에 앱의 사이트 정보를 넘기는 `site/i18n-core.mjs`(사전은 지금처럼 `site/i18n.mjs`가 넣습니다):
+공용 번역기에 앱의 사이트 정보와 언어 주소 규칙을 넘기는 `site/i18n-core.mjs`(사전은 지금처럼 `site/i18n.mjs`가 넣습니다):
 
 ```js
 import metadata from './metadata.json' with { type: 'json' };
 import { configureI18n } from 'opencad-site-kit/i18n/core';
-configureI18n({ metadata });
+import { OPENCAD_SITE } from 'opencad-site-kit/presets/opencad';
+configureI18n({ metadata, ...OPENCAD_SITE });
 export * from 'opencad-site-kit/i18n/core';
 ```
+
+빌드의 `defineSite`도 번역기를 설정하지만, `routes`를 주지 않으면 이 파일이 같은 사이트 정보로 준 규칙을 그대로 씁니다.
 
 사이트 설정 `tools/site.mjs`(vite.config.ts와 시험이 같이 씁니다)와 `vite.config.ts`:
 
@@ -101,15 +110,84 @@ export default defineConfig({ base: './', plugins: [siteLocalization(site), site
 ```ts
 import { createLanguageMenu } from 'opencad-site-kit/i18n/language-menu';
 import { initAnalytics, beginOpen, trackExport } from 'opencad-site-kit/analytics';
-import { GA4_MEASUREMENT_ID } from 'opencad-site-kit/analytics/config';
+import { OPENCAD_ANALYTICS } from 'opencad-site-kit/presets/opencad';
 import { canUseServiceWorker, consumeLaunchFiles, registerServiceWorker, whenVisible, type SwContainer } from 'opencad-site-kit/pwa/client';
+import { acceptEmbeddedFiles } from 'opencad-site-kit/embed/app';
 
+initAnalytics(OPENCAD_ANALYTICS, 'step');
 if (import.meta.env.PROD && canUseServiceWorker(location, navigator))
   void registerServiceWorker(navigator.serviceWorker as unknown as SwContainer, new URL('sw.js', document.baseURI), (apply) => offerUpdate(apply), undefined, { onVisible: whenVisible });
 consumeLaunchFiles((files) => openFiles(files));
+// 다른 사이트에 넣었을 때(iframe) 부모 페이지가 넘기는 파일 — 열기를 마치면 풀리는 Promise를 돌려주면 부모가 끝을 안다
+acceptEmbeddedFiles((files) => openFiles(files, { remember: false }), { accept: ['.step', '.stp', '.p21', '.stpz'] });
 ```
 
+iframe 안에서는 `initAnalytics`가 아무것도 하지 않고 `canUseServiceWorker`가 false입니다(남의 페이지 안에서 동의 상자·새 판 알림을 띄우지 않고,
+그 사이트 방문을 OpenCAD 통계에 섞지 않습니다). `acceptEmbeddedFiles`는 `<html data-embedded>`를 달아 앱이 넣은 화면에서만 숨길 것을 CSS로 가릴 수 있게 합니다.
+
 네 앱에 처음 적용하는 순서와 앱마다 바꿀 것은 [docs/ADOPTION.md](docs/ADOPTION.md)에 있습니다.
+
+## 다른 사이트에서 쓰기
+
+이 도구는 OpenCAD 앱을 위해 만들었지만, 사이트 값은 모두 설정으로 받으므로 자기 Vite 웹앱(예: 직접 배포한 OpenCAD 앱 사본)에도 씁니다.
+`presets/opencad.mjs`를 본보기로 자기 값을 만듭니다.
+
+```js
+// site/i18n-core.mjs — 앱이 https://me.example/cad/ 에 있고 블로그(/blog/)도 언어 앞머리(/en/blog/)를 쓰는 사이트
+import metadata from './metadata.json' with { type: 'json' };   // url: "https://me.example/cad/"
+import { configureI18n } from 'opencad-site-kit/i18n/core';
+configureI18n({
+  metadata,
+  routes: { apps: ['/cad/'], site: { root: '/', sections: ['blog'] } },  // 없으면 metadata.url의 경로(/cad/) 하나만 앱으로 본다
+  untranslated: ['My Site'],
+});
+export * from 'opencad-site-kit/i18n/core';
+```
+
+```ts
+// 방문 통계: 이 호스트의 https 페이지에서만, 방문자가 고른 뒤에만 보낸다
+initAnalytics({
+  measurementId: 'G-XXXXXXXXXX',
+  host: 'me.example',
+  consentKey: 'me.analytics-consent.v1',
+  apps: { cad: { path: '/cad/', title: 'My Site | CAD 뷰어' } },   // GA에는 이 공개 경로·제목만 남는다(파일 이름·문서 제목은 보내지 않음)
+  text: { message: '…', allow: '허용', limited: '기본 방문만', deny: '수집 안 함' },  // 동의 상자 글(기본 한국어)
+}, 'cad');
+```
+
+| 설정 | 쓰는 곳 | 주지 않으면 |
+|---|---|---|
+| `routes.apps`(앱 뿌리, `/`로 시작·끝) | `languageUrl`·언어 페이지 링크 | `metadata.url`의 경로 하나. 이 컴퓨터(localhost)에서는 `/`도 |
+| `routes.aliases`(옛 뿌리 → 지금 뿌리) | 옛 주소 링크 | 없음 |
+| `routes.site`(`root`, `sections`) | 언어를 앞머리로 두는 사이트 쪽 | 없음 |
+| `untranslated` | `sourceMessage`가 거꾸로 찾지 않을 이름 | 없음 |
+| `AnalyticsConfig`(`measurementId`·`host`·`apps` 필수, `consentKey`·`formats`·`sourceTool`·`text`) | `initAnalytics` | 통계를 켜지 않음 |
+
+언어는 아직 한국어·영어·일본어·중국어(간체)·독일어 다섯 가지로 정해져 있습니다(사전 열쇠는 한국어 원문).
+
+## 다른 사이트에 넣기(임베드)
+
+OpenCAD 앱을 자기 웹페이지에 넣을 때는 스크립트 한 줄과 요소 하나면 됩니다. 자세한 것은 [docs/EMBED.md](docs/EMBED.md).
+
+```html
+<script type="module" src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.2.0/embed/opencad-embed.js"></script>
+<opencad-viewer src="/models/bracket.step" lang="en" style="height: 520px"></opencad-viewer>
+```
+
+파일은 그 페이지가 직접 읽어 iframe 안의 앱에 넘깁니다(앱은 남의 서버를 부르지 않습니다). 앱 쪽은 `acceptEmbeddedFiles`를 부르는 판부터 받습니다.
+
+## 0.2.0으로 옮기기
+
+0.1.x는 OpenCAD 값(통계 ID·호스트·앱 경로·언어 주소 규칙)이 코드에 있었습니다. 0.2.0은 설정으로 받으므로 앱에서 세 곳을 바꿉니다.
+
+1. `site/i18n-core.mjs`: `configureI18n({ metadata })` → `configureI18n({ metadata, ...OPENCAD_SITE })`(`opencad-site-kit/presets/opencad`에서 가져옴).
+   빼면 다른 OpenCAD 앱·포트폴리오로 가는 링크가 언어 주소로 바뀌지 않습니다
+2. 통계: `initAnalytics(GA4_MEASUREMENT_ID, 'step')` → `initAnalytics(OPENCAD_ANALYTICS, 'step')`. 형이 바뀌어 예전 꼴은 형 검사에서 걸립니다
+3. (선택) 임베드: `consumeLaunchFiles` 옆에 `acceptEmbeddedFiles(…)`
+
+네 앱을 옮기며 `opencad-site compare-dist`로 견주니 HTML·사이트맵·sw.js는 자산 이름·날짜·판 이름을 맞추면 0.1.6과 같고 앱 정보는 바이트까지 같았습니다.
+언어 주소는 0.1.x 규칙과 520가지 주소·언어 조합으로 견줬습니다(`test/i18n-core.test.ts`). 바뀌는 동작은 iframe 안에서 통계·서비스 워커가 꺼지는 것뿐입니다.
+첫 화면 스크립트는 1~2 kB(gzip) 늘고 스크립트가 바뀌므로 내용 수정일은 올립니다.
 
 방문 통계의 `page_location`은 `/opencad-step/de/`처럼 앱의 실제 언어별 정식 주소를 보존하고, `page_language`는 `ko`·`en`·`ja`·`zh-CN`·`de` 중 하나로 기록합니다. 페이지 조회와 파일 열기·내보내기 이벤트에 같은 언어 문맥을 사용합니다. 기존 앱이 URL 갱신 뒤 보내는 `languagechange` 이벤트도 캡처해 언어를 전환할 때 새 조회를 한 번 기록합니다. 알려진 언어 진입 주소만 허용하며 파일명·임의 하위 경로·파일 URL·fragment를 보내지 않습니다. 허용된 캠페인 값은 기존처럼 분석 동의 시에만 전송합니다. 이전 판에서 기본 주소에 합쳐진 GA 이력은 소급 복원할 수 없습니다.
 
@@ -160,14 +238,16 @@ npm test            # .runtime/variants가 있으면 원본과 견주는 시험�
 | [opencad-skp](https://github.com/GyuTae-Kim/opencad-skp) | v0.1.3 | #21 |
 | [opencad-dwgdxf](https://github.com/GyuTae-Kim/opencad-dwgdxf) | v0.1.3 | #28 |
 
+0.2.0(설정 분리·임베드) 적용 PR: opencad-step #114 · opencad-skp #115 · opencad-nc #106 · opencad-dwgdxf #176.
+
 단계마다의 빌드 결과 비교와 바뀐 동작은 [docs/ADOPTION.md](docs/ADOPTION.md)의 "적용 기록"에 있습니다. 앱이 새 판으로 올릴 때는 이 표도 고칩니다.
 
 ## 남은 일
 
 - 서비스 워커 본문과 최근 문서 저장소(앱의 `recent.ts`)는 앱마다 꼴이 달라 아직 앱에 있습니다. 같은 꼴로 모으면 워커 틀도 이 도구로 옮깁니다
 - 서비스 워커 판 이름 짓기·미리 담을 목록 차례는 앱마다 예전 방식을 설정으로 남겼습니다(기본값으로 바꾸면 사용자 브라우저가 한 번 새 판으로 받습니다)
-- `languageUrl`이 아는 앱 경로(opencad-step·skp·nc·dwgdxf, 옛 2dcad-viewer)와 포트폴리오 경로는 코드에 적혀 있습니다. 새 앱을 더하면 여기도 고칩니다
-- 방문 통계의 앱 이름·제목 목록(`AnalyticsTool`)도 코드에 적혀 있습니다
+- 새 OpenCAD 앱을 더하면 `presets/opencad.mjs`(언어 주소 규칙·통계 공개 경로)와 `embed/opencad-embed.js`의 `APPS`를 고칩니다
+- 언어(다섯 가지)는 아직 코드에 정해져 있습니다
 
 ## 내력
 
