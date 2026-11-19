@@ -22,13 +22,17 @@ export class OpenCadViewer extends HTMLElement {
   /** 파일을 앱에 넘긴다. 앱이 열기를 마치면 풀리고, 못 받으면 Error(code)로 거절된다 */
   open(file: Blob, name?: string): Promise<void>;
 }
+/** opencad-error의 code(요소가 정하는 것과 앱이 보내는 것). 새 판의 앱이 보낸 다른 코드도 문자열 그대로 온다 */
+export type OpenCadErrorCode = 'timeout' | 'fetch-failed' | 'unsupported' | 'too-large' | 'bad-request' | 'open-failed';
 export interface OpenCadEmbedEvents {
   'opencad-ready': CustomEvent<{ accept: string[] | null }>;
   'opencad-done': CustomEvent<{ id: string | null }>;
-  'opencad-error': CustomEvent<{ id: string | null; code: string }>;
+  'opencad-error': CustomEvent<{ id: string | null; code: OpenCadErrorCode | (string & {}) }>;
 }
 declare global {
   interface HTMLElementTagNameMap {
     'opencad-viewer': OpenCadViewer;
   }
+  // 이벤트는 요소에서 올라오므로(bubbles) 요소·document·window의 addEventListener에서 detail 형이 잡히게 한다
+  interface GlobalEventHandlersEventMap extends OpenCadEmbedEvents {}
 }
