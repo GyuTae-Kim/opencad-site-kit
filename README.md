@@ -349,6 +349,7 @@ npm test            # .runtime/variants가 있으면 원본과 견주는 시험�
 | [opencad-dwgdxf](https://github.com/GyuTae-Kim/opencad-dwgdxf) | v0.1.3 | #28 |
 
 0.2.0(설정 분리·임베드) 적용 PR: opencad-step #114 · opencad-skp #115 · opencad-nc #106 · opencad-dwgdxf #176.
+0.3.0(임베드 요소 lazy·이벤트 형) 적용 PR: opencad-step #120 · opencad-skp #122 · opencad-nc #112 · opencad-dwgdxf #181. 앱이 쓰는 파일은 바뀌지 않은 판이라 의존·잠금 파일만 바꿨습니다.
 
 단계마다의 빌드 결과 비교와 바뀐 동작은 [docs/ADOPTION.md](docs/ADOPTION.md)의 "적용 기록"에 있습니다. 앱이 새 판으로 올릴 때는 이 표도 고칩니다.
 
