@@ -10,11 +10,13 @@ const root = fileURLToPath(new URL('..', import.meta.url));
 const read = (path: string): string => readFileSync(`${root}/${path}`, 'utf8');
 const version = (JSON.parse(read('package.json')) as { version: string }).version;
 
-/** 설치 안내가 실린 파일: README, docs의 임베드 안내(EMBED*.md), 예제, 요소 스크립트 머리말 */
+/** 설치 안내가 실린 파일: README, docs의 임베드 안내(EMBED*.md), 예제, 데모 페이지, 요소 스크립트 머리말 */
 const files = [
   'README.md',
   ...readdirSync(`${root}/docs`).filter((name) => /^EMBED.*\.md$/.test(name)).map((name) => `docs/${name}`),
   ...(existsSync(`${root}/examples`) ? readdirSync(`${root}/examples`).filter((name) => name.endsWith('.html')).map((name) => `examples/${name}`) : []),
+  // 데모 페이지(GitHub Pages)도 안내와 같은 스크립트 줄을 쓴다
+  ...(existsSync(`${root}/demo`) ? readdirSync(`${root}/demo`).filter((name) => name.endsWith('.html')).map((name) => `demo/${name}`) : []),
   'embed/opencad-embed.js',
 ];
 const CDN = /cdn\.jsdelivr\.net\/gh\/GyuTae-Kim\/opencad-site-kit@v(\d+\.\d+\.\d+)\/embed\/opencad-embed\.js/g;

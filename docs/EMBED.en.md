@@ -12,6 +12,8 @@
 You need one script tag and one element. There is no server to run, no account and no build step.
 The script, this repository and the four app repositories are public under the MIT license.
 
+Try it on the [demo page](https://gyutae-kim.github.io/opencad-site-kit/).
+
 ## Quick start
 
 ```html

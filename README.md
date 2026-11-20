@@ -2,6 +2,8 @@
 
 English: [Embed OpenCAD in your web page](docs/EMBED.en.md)
 
+**데모 (Demo)**: [https://gyutae-kim.github.io/opencad-site-kit/](https://gyutae-kim.github.io/opencad-site-kit/) — 이 저장소의 `<opencad-viewer>`를 안내대로 넣은 페이지입니다. 예제 앱, 화면 언어, 내 파일 열기를 바로 써 볼 수 있습니다.
+
 OpenCAD 앱(STEP·SKP·NC·DWG·DXF)이 함께 쓰는 사이트 계층 도구입니다. 다섯 언어 페이지, 검색·공유 정보와 사이트맵, 내용 수정일,
 홈 화면 앱 정보와 오프라인 서비스 워커, 방문 통계, 모바일 성능 측정, 다른 사이트에 앱을 넣는 임베드를 한곳에 모았습니다.
 사이트마다 다른 값(통계 ID·호스트·앱 경로·언어 주소 규칙)은 코드에 두지 않고 설정으로 받습니다 — OpenCAD의 값은 `presets/opencad.mjs` 한 파일에 있습니다.
