@@ -5,7 +5,7 @@
 
 ## [0.3.2] - 2026-11-20
 
-`<opencad-viewer>`만 고친 판입니다. 앱 빌드 결과는 0.3.1과 같고, CDN 주소(`@v0.3.2`)와 `integrity` 값이 바뀌었습니다.
+`<opencad-viewer>`만 고친 판입니다. 앱 빌드 결과는 0.3.1과 같고, CDN 주소(`@v0.3.2`)와 `integrity` 값이 바뀌었습니다([#21](https://github.com/GyuTae-Kim/opencad-site-kit/pull/21)).
 
 ### 고친 것
 
