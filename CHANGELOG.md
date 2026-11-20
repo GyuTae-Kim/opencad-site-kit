@@ -1,11 +1,11 @@
 # 바뀐 점
 
-판마다 무엇이 바뀌었는지 적습니다. 판 이름은 `package.json`의 `version`과 같은 태그(`v0.3.1`)이고, 앱은 그 태그로 고정해 씁니다
+판마다 무엇이 바뀌었는지 적습니다. 같은 내용을 [GitHub 릴리스](https://github.com/GyuTae-Kim/opencad-site-kit/releases)에도 올립니다. 판 이름은 `package.json`의 `version`과 같은 태그(`v0.3.1`)이고, 앱은 그 태그로 고정해 씁니다
 (`github:GyuTae-Kim/opencad-site-kit#v0.3.1`). 판을 올리는 규칙은 [README "판 올리기"](README.md#판-올리기)에 있습니다.
 
 ## [0.3.1] - 2026-11-20
 
-`<opencad-viewer>`만 고친 판입니다. 앱 빌드 결과는 0.3.0과 같고, CDN 주소(`@v0.3.1`)와 `integrity` 값이 바뀌었습니다.
+`<opencad-viewer>`만 고친 판입니다. 앱 빌드 결과는 0.3.0과 같고, CDN 주소(`@v0.3.1`)와 `integrity` 값이 바뀌었습니다([#18](https://github.com/GyuTae-Kim/opencad-site-kit/pull/18)).
 
 ### 고친 것
 

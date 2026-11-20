@@ -117,7 +117,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "variants": "node scripts/extract-variants.mjs",
-    "embed:snippet": "node scripts/embed-snippet.mjs"
+    "embed:snippet": "node scripts/embed-snippet.mjs",
+    "release:notes": "node scripts/release-notes.mjs"
   },
   "peerDependencies": {
     "jsdom": ">=22.1.0",
