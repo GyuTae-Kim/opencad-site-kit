@@ -16,8 +16,8 @@ The script, this repository and the four app repositories are public under the M
 
 ```html
 <script type="module"
-  src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.1/embed/opencad-embed.js"
-  integrity="sha384-9+N96YcB5HSUP8VitMtn2X+WBwrGeNq4r/qMolw457g43LaJV1rpxVubR/E0YJRk"
+  src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.2/embed/opencad-embed.js"
+  integrity="sha384-C1/pM8qbTaq6huCkD80qglQMMO7xeIhOsLMPe4++k+SNOHYvJ7QVZxJWsOffqULn"
   crossorigin="anonymous"></script>
 
 <opencad-viewer src="/files/bracket.step" lang="en" style="height: 520px"></opencad-viewer>
@@ -27,7 +27,7 @@ The script, this repository and the four app repositories are public under the M
 - Your page downloads `src` itself and hands the bytes to the app. The file must be on your own site or on a server that allows CORS.
 - **The app UI is Korean by default.** Set `lang` to `en`, `ja`, `zh-CN` or `de` for another language.
 - Size it with CSS. The default height is 480px, and the width follows the parent.
-- `@v0.3.1` pins the version. Tags never move, so the URL always serves the same bytes and the `integrity` hash keeps matching.
+- `@v0.3.2` pins the version. Tags never move, so the URL always serves the same bytes and the `integrity` hash keeps matching.
   If the file differs by a single byte, the browser refuses to run it.
   When you upgrade, change the URL and the hash together:
 
@@ -50,7 +50,7 @@ The script, this repository and the four app repositories are public under the M
 The element is a single file with no dependencies (12.6 KB, 4.8 KB gzipped). Download it and serve it from your site.
 
 ```bash
-curl -L -o opencad-embed.js https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.1/embed/opencad-embed.js
+curl -L -o opencad-embed.js https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.2/embed/opencad-embed.js
 ```
 
 ```html
@@ -65,7 +65,7 @@ The apps themselves still load from `https://gyutae-kim.github.io/`.
 The package isn't on the npm registry, so install it from the GitHub tag (git must be installed on the machine).
 
 ```bash
-npm install "opencad-site-kit@github:GyuTae-Kim/opencad-site-kit#v0.3.1"
+npm install "opencad-site-kit@github:GyuTae-Kim/opencad-site-kit#v0.3.2"
 ```
 
 ```js
@@ -256,6 +256,36 @@ const done = (event) => console.log('opened', event.detail.id);
 
 Inside your page, the app turns off analytics, shows no consent banner and registers no service worker (offline mode, update prompts).
 The browser keeps the app's storage, such as recent documents, separate for your site, so it never mixes with the OpenCAD site's own history.
+
+## Troubleshooting
+
+### Sites with a Content Security Policy
+
+If your page sends a CSP, allow these sources:
+
+| Directive | Add | If missing |
+|---|---|---|
+| `script-src` | `https://cdn.jsdelivr.net` (`'self'` if you host the file yourself) | The element never registers and nothing shows |
+| `frame-src` | `https://gyutae-kim.github.io` (your own origin if you deploy the apps) | The app is blocked and `opencad-error` (`timeout`) fires after 30 seconds |
+| `connect-src` | The origin of your `src` files (`'self'` for the same origin) | `opencad-error` (`fetch-failed`) |
+
+```
+Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; frame-src https://gyutae-kim.github.io; connect-src 'self'
+```
+
+`style-src` needs nothing extra. Since 0.3.2 the element sizes itself with a constructed stylesheet (`adoptedStyleSheets`), which CSP doesn't block.
+Browsers without it (Safari 16.3 and older) and versions 0.3.1 and older use a `<style>` element instead, so on a page that blocks inline styles the viewer shows at 300×150.
+
+### By symptom
+
+| Symptom | Check |
+|---|---|
+| Nothing shows | An `integrity` error in the console (copy the `<script>` line exactly; the URL version and the hash must match), CSP `script-src` |
+| The viewer is a small 300×150 box | A CSP that blocks inline styles with 0.3.1 or older. Use 0.3.2 or later |
+| `timeout` | The `base` URL and CSP `frame-src`. If the app gets ready later, `opencad-ready` still follows |
+| `fetch-failed` | `src` is on your origin or allows CORS, CSP `connect-src` |
+| `loading="lazy"` but the app never loads | The element hasn't come within 200px of the viewport, or its parent has zero height. Calling `open()` loads it right away |
+| The 3D view freezes | Browsers pause drawing in hidden tabs and windows. It resumes when the tab is visible again |
 
 ## Browser support
 

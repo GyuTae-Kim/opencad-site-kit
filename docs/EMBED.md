@@ -8,7 +8,7 @@ OpenCAD의 네 앱(DWG·DXF 2D CAD, STEP·SketchUp·NC 3D 뷰어)을 블로그·
 ## 바로 쓰기
 
 ```html
-<script type="module" src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.1/embed/opencad-embed.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.2/embed/opencad-embed.js"></script>
 
 <opencad-viewer src="/models/bracket.step" style="height: 520px"></opencad-viewer>
 ```
@@ -16,7 +16,7 @@ OpenCAD의 네 앱(DWG·DXF 2D CAD, STEP·SketchUp·NC 3D 뷰어)을 블로그·
 - 요소가 파일 확장자를 보고 앱을 고릅니다: `.dwg`·`.dxf` → DWG/DXF 캐드, `.step`·`.stp`·`.p21`·`.stpz` → STEP 뷰어, `.skp` → SKP 뷰어,
   `.nc`·`.gcode`·`.mpr`·`.pgi`·`.h` 등 → NC 뷰어
 - 크기는 CSS로 정합니다(기본 높이 480px, 너비는 부모에 맞춤)
-- 스크립트는 한 파일(의존 없음, MIT)이라 내 사이트에 복사해 올려도 됩니다. jsDelivr 주소의 `@v0.3.1`처럼 판을 고정해 씁니다
+- 스크립트는 한 파일(의존 없음, MIT)이라 내 사이트에 복사해 올려도 됩니다. jsDelivr 주소의 `@v0.3.2`처럼 판을 고정해 씁니다
 - `integrity`(SRI)를 붙이는 법, npm으로 받는 법, iframe만 넣는 법은 [README "내 웹사이트에 OpenCAD 설치하기"](../README.md#내-웹사이트에-opencad-설치하기)에 있습니다
 
 방문자가 자기 파일을 열게 하려면 `src` 없이 `app`만 주거나, 파일 고르기를 이어 `open()`을 부릅니다.
@@ -159,6 +159,36 @@ const done = (event) => console.log('열림', event.detail.id);
 
 넣은 앱(iframe 안)은 방문 통계를 켜지 않고 동의 상자도 띄우지 않으며, 서비스 워커(오프라인·새 판 알림)도 등록하지 않습니다.
 최근 문서 같은 앱 저장소는 브라우저가 내 사이트 몫으로 따로 나눕니다(OpenCAD 사이트에서 연 기록과 섞이지 않습니다).
+
+## 문제 해결
+
+### CSP(콘텐츠 보안 정책)를 쓰는 사이트
+
+페이지에 CSP가 있으면 다음 출처를 허용합니다.
+
+| 지시어 | 넣을 값 | 빠지면 |
+|---|---|---|
+| `script-src` | `https://cdn.jsdelivr.net`(파일을 내 사이트에 두었으면 `'self'`) | 요소가 등록되지 않아 아무것도 뜨지 않음 |
+| `frame-src` | `https://gyutae-kim.github.io`(앱을 직접 배포했으면 그 출처) | 앱이 막히고 30초 뒤 `opencad-error`(`timeout`) |
+| `connect-src` | `src` 파일이 있는 출처(같은 출처면 `'self'`) | `opencad-error`(`fetch-failed`) |
+
+```
+Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; frame-src https://gyutae-kim.github.io; connect-src 'self'
+```
+
+`style-src`에는 따로 넣을 것이 없습니다. 0.3.2부터 요소는 CSP에 걸리지 않는 스타일시트(`adoptedStyleSheets`)로 크기를 잡습니다.
+이를 지원하지 않는 브라우저(Safari 16.3 이하)와 0.3.1 이하 판은 `<style>`을 쓰므로, 인라인 스타일을 막은 페이지에서는 뷰어가 300×150 크기로 작게 뜹니다.
+
+### 증상별로 볼 곳
+
+| 증상 | 볼 곳 |
+|---|---|
+| 아무것도 뜨지 않음 | 브라우저 콘솔의 `integrity` 오류(안내의 `<script>` 줄을 그대로 복사했는지, 주소의 판과 값이 같은 판인지), CSP `script-src` |
+| 뷰어가 300×150 크기로 작음 | 인라인 스타일을 막은 CSP에서 0.3.1 이하를 씀 — 0.3.2 이상으로 |
+| `timeout` | `base` 주소, CSP `frame-src`. 앱이 늦게 준비되면 그 뒤 `opencad-ready`가 옵니다 |
+| `fetch-failed` | `src`가 같은 출처이거나 CORS를 허용하는지, CSP `connect-src` |
+| `loading="lazy"`인데 앱이 뜨지 않음 | 요소가 화면 200px 안으로 오지 않았거나 부모 높이가 0. `open()`을 부르면 바로 뜹니다 |
+| 3D 화면이 멈춤 | 브라우저는 가려진 탭·창의 그리기를 멈춥니다. 탭이 다시 보이면 이어서 그립니다 |
 
 ## 앱을 직접 배포해 쓰기
 

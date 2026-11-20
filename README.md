@@ -27,8 +27,8 @@ OpenCAD 앱(STEP·SKP·NC·DWG·DXF)이 함께 쓰는 사이트 계층 도구입
 
 ```html
 <script type="module"
-  src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.1/embed/opencad-embed.js"
-  integrity="sha384-9+N96YcB5HSUP8VitMtn2X+WBwrGeNq4r/qMolw457g43LaJV1rpxVubR/E0YJRk"
+  src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.2/embed/opencad-embed.js"
+  integrity="sha384-C1/pM8qbTaq6huCkD80qglQMMO7xeIhOsLMPe4++k+SNOHYvJ7QVZxJWsOffqULn"
   crossorigin="anonymous"></script>
 
 <opencad-viewer src="/files/bracket.step" lang="en" style="height: 520px"></opencad-viewer>
@@ -36,7 +36,7 @@ OpenCAD 앱(STEP·SKP·NC·DWG·DXF)이 함께 쓰는 사이트 계층 도구입
 
 - 요소는 `src`의 확장자로 앱을 고릅니다: `.dwg`·`.dxf`는 DWG/DXF 캐드, `.step`·`.stp`는 STEP 뷰어, `.skp`는 SKP 뷰어, `.nc`·`.gcode` 등은 NC 뷰어입니다
 - `src` 파일은 내 페이지가 직접 받아 앱에 넘깁니다. 그래서 내 사이트에 있는 파일이거나 CORS를 허용한 주소여야 합니다
-- 주소에 `@v0.3.1`처럼 태그를 붙여 판을 고정합니다. 태그는 옮기지 않으므로 같은 주소는 늘 같은 파일이고, `integrity` 값도 그대로 맞습니다.
+- 주소에 `@v0.3.2`처럼 태그를 붙여 판을 고정합니다. 태그는 옮기지 않으므로 같은 주소는 늘 같은 파일이고, `integrity` 값도 그대로 맞습니다.
   파일이 한 바이트라도 다르면 브라우저가 실행하지 않습니다. 새 판으로 올릴 때는 주소와 `integrity`를 함께 바꿉니다:
   `curl -sL <스크립트 주소> | openssl dgst -sha384 -binary | openssl base64 -A`
 - 크기는 CSS로 정합니다(기본 높이 480px, 너비는 부모에 맞춤). 화면 언어는 `lang`(`ko`·`en`·`ja`·`zh-CN`·`de`)으로 고릅니다
@@ -64,7 +64,7 @@ OpenCAD 앱(STEP·SKP·NC·DWG·DXF)이 함께 쓰는 사이트 계층 도구입
 요소 스크립트는 의존 없는 파일 하나입니다(12.6 KB, gzip 4.8 KB). 받아서 내 사이트에 올리고 그 주소로 불러옵니다.
 
 ```bash
-curl -L -o opencad-embed.js https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.1/embed/opencad-embed.js
+curl -L -o opencad-embed.js https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.2/embed/opencad-embed.js
 ```
 
 ```html
@@ -78,7 +78,7 @@ MIT 조건대로 이 저장소의 저작권·허가 문구([LICENSE](LICENSE))�
 npm 레지스트리에는 올리지 않았으므로 GitHub 태그로 받습니다(설치하는 컴퓨터에 git이 있어야 합니다).
 
 ```bash
-npm install "opencad-site-kit@github:GyuTae-Kim/opencad-site-kit#v0.3.1"
+npm install "opencad-site-kit@github:GyuTae-Kim/opencad-site-kit#v0.3.2"
 ```
 
 ```js
@@ -115,15 +115,17 @@ import 'opencad-site-kit/embed';   // <opencad-viewer>를 등록한다. 번들�
 - **느린 기기**: 앱이 30초 안에 준비되지 않으면 `opencad-error`(`timeout`)가 옵니다. 앱은 그 뒤에도 계속 불러오고, 준비되면 `opencad-ready`가 옵니다.
   `src`로 준 파일은 그때 다시 받아 열고, `open()`으로 넘긴 파일은 `opencad-ready`를 받은 뒤 다시 넘깁니다
 - **브라우저**: 요소 스크립트는 Chrome·Edge 84, Firefox 90, Safari 15 이후에서 돕니다. 앱마다 더 필요한 기능(WebGL 등)은 각 앱 README에 있습니다
+- **CSP를 쓰는 사이트**: `script-src`에 `https://cdn.jsdelivr.net`, `frame-src`에 `https://gyutae-kim.github.io`를 더합니다. 증상별 확인은 [안내 문서 "문제 해결"](docs/EMBED.md#문제-해결)에 있습니다
 - **CDN을 쓰지 않을 때**: jsDelivr를 쓰지 않으면 2번처럼 파일을 내 사이트에 둡니다. 앱 iframe은 `gyutae-kim.github.io`(또는 `base`)에서 뜹니다
 
-2026-11-19~20에 다른 출처 페이지(localhost)에서 위 1번 코드(당시 `v0.2.0`)로 확인한 것:
+2026-11-19~20에 다른 출처 페이지(localhost)에서 위 1번 코드로 확인한 것(v0.2.0~v0.3.2):
 
 - jsDelivr의 태그 주소 파일이 그 태그와 바이트까지 같고, CORS를 허용하며(`access-control-allow-origin: *`) 1년 동안 바뀌지 않는 파일로 캐시합니다
 - `integrity` 값이 맞으면 요소가 등록되고, 값이 다르면 브라우저가 스크립트를 막습니다
 - 네 앱 페이지는 다른 사이트가 iframe에 넣는 것을 막는 헤더(`X-Frame-Options`, CSP `frame-ancestors`)를 보내지 않습니다
 - 배포된 네 앱 모두 파일 열기를 마쳤습니다(`opencad-done`): DXF(일본어 화면)·NC(독일어 화면)·SKP는 `src`로, STEP은 방문자가 고른 파일처럼 `open()`으로 넘겼습니다
 - `loading="lazy"`(0.3.0)는 화면 밖 뷰어가 앱을 불러오지 않고, 스크롤해 다가간 뷰어만 앱을 띄워 열기를 마칩니다
+- 인라인 스타일과 스크립트를 막은 CSP 페이지(`style-src 'self'`)에서 0.3.1은 뷰어가 300×150으로 줄었고, 0.3.2는 위반 없이 제 크기(높이 480px)로 열기를 마칩니다. `frame-src`가 빠지면 30초 뒤 `timeout`입니다
 - npm으로 받은 패키지에서 `opencad-site-kit/embed`가 이 파일 하나로 풀리고, Node(서버)에서 가져와도 오류가 없습니다
 
 ## 들어 있는 것
@@ -159,7 +161,7 @@ npm에 올리지 않고 GitHub 의존으로 씁니다. 빌드 때만 쓰므로 `
 
 ```json
 "devDependencies": {
-  "opencad-site-kit": "github:GyuTae-Kim/opencad-site-kit#v0.3.1"
+  "opencad-site-kit": "github:GyuTae-Kim/opencad-site-kit#v0.3.2"
 },
 "scripts": {
   "build": "tsc --noEmit && vite build && npm run check:seo && npm run check:i18n",

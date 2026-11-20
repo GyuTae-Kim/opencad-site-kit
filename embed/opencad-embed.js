@@ -1,7 +1,7 @@
 /**
  * <opencad-viewer> — 내 웹페이지에 OpenCAD 앱(DWG·DXF 2D CAD, STEP·SketchUp·NC 3D 뷰어)을 넣는 요소. 의존 없는 한 파일, MIT.
  *
- *   <script type="module" src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.1/embed/opencad-embed.js"></script>
+ *   <script type="module" src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.2/embed/opencad-embed.js"></script>
  *   <opencad-viewer src="/models/bracket.step" style="height: 480px"></opencad-viewer>
  *
  * 속성
@@ -38,6 +38,32 @@ export const APPS = {
 };
 
 const TIMEOUT_MS = 30_000;
+
+const CSS = ':host{display:block;position:relative;height:480px;min-height:200px;border:1px solid #8886;border-radius:6px;overflow:hidden;background:Canvas;color:CanvasText}iframe{display:block;width:100%;height:100%;border:0}p{margin:0;padding:16px;font:14px/1.5 system-ui,sans-serif}';
+let sharedSheet = null;
+
+/**
+ * 요소의 스타일. 만든 스타일시트(adoptedStyleSheets)는 CSP style-src에 걸리지 않아, 인라인 스타일을 막은 페이지에서도 크기가 맞는다.
+ * 지원하지 않는 브라우저(Safari 16.3 이하 등)만 <style>을 넣는다
+ */
+function applyStyles(root) {
+  if ('adoptedStyleSheets' in root && typeof CSSStyleSheet === 'function') {
+    try {
+      if (!sharedSheet) {
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync(CSS);
+        sharedSheet = sheet;
+      }
+      root.adoptedStyleSheets = [sharedSheet];
+      return;
+    } catch {
+      /* 만들 수 없는 브라우저 */
+    }
+  }
+  const style = document.createElement('style');
+  style.textContent = CSS;
+  root.append(style);
+}
 
 /** 다른 창(realm)에서 만든 Blob·File도 받게 instanceof 대신 꼬리표로 본다 */
 function isBlob(value) {
@@ -103,10 +129,7 @@ export class OpenCadViewer extends Base {
 
   constructor() {
     super();
-    const root = this.attachShadow({ mode: 'open' });
-    const style = document.createElement('style');
-    style.textContent = ':host{display:block;position:relative;height:480px;min-height:200px;border:1px solid #8886;border-radius:6px;overflow:hidden;background:Canvas;color:CanvasText}iframe{display:block;width:100%;height:100%;border:0}p{margin:0;padding:16px;font:14px/1.5 system-ui,sans-serif}';
-    root.append(style);
+    applyStyles(this.attachShadow({ mode: 'open' }));
   }
 
   connectedCallback() {

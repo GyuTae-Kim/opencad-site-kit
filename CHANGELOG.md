@@ -1,7 +1,20 @@
 # 바뀐 점
 
-판마다 무엇이 바뀌었는지 적습니다. 같은 내용을 [GitHub 릴리스](https://github.com/GyuTae-Kim/opencad-site-kit/releases)에도 올립니다. 판 이름은 `package.json`의 `version`과 같은 태그(`v0.3.1`)이고, 앱은 그 태그로 고정해 씁니다
-(`github:GyuTae-Kim/opencad-site-kit#v0.3.1`). 판을 올리는 규칙은 [README "판 올리기"](README.md#판-올리기)에 있습니다.
+판마다 무엇이 바뀌었는지 적습니다. 같은 내용을 [GitHub 릴리스](https://github.com/GyuTae-Kim/opencad-site-kit/releases)에도 올립니다. 판 이름은 `package.json`의 `version`과 같은 태그(`v0.3.2`)이고, 앱은 그 태그로 고정해 씁니다
+(`github:GyuTae-Kim/opencad-site-kit#v0.3.2`). 판을 올리는 규칙은 [README "판 올리기"](README.md#판-올리기)에 있습니다.
+
+## [0.3.2] - 2026-11-20
+
+`<opencad-viewer>`만 고친 판입니다. 앱 빌드 결과는 0.3.1과 같고, CDN 주소(`@v0.3.2`)와 `integrity` 값이 바뀌었습니다.
+
+### 고친 것
+
+- 인라인 스타일을 막은 CSP(`style-src 'self'` 등) 페이지에서 요소의 `<style>`이 막혀, 뷰어가 300×150 크기로 작게 뜨던 문제를 고쳤습니다.
+  요소는 이제 CSP에 걸리지 않는 스타일시트(`adoptedStyleSheets`)로 크기를 잡습니다. 지원하지 않는 브라우저(Safari 16.3 이하)는 전처럼 `<style>`을 씁니다.
+
+### 문서
+
+- 안내 문서에 「문제 해결」을 더했습니다. CSP에 넣을 값(`script-src`·`frame-src`·`connect-src`)과 증상별로 볼 곳을 담았습니다.
 
 ## [0.3.1] - 2026-11-20
 
@@ -100,6 +113,7 @@
 첫 판입니다. 네 OpenCAD 앱이 저장소마다 복사해 쓰던 사이트 계층을 한 패키지로 모았습니다([#1](https://github.com/GyuTae-Kim/opencad-site-kit/pull/1)).
 다국어 페이지, 검색 정보와 사이트맵, 내용 수정일, 홈 화면 앱과 서비스 워커, 방문 통계, 성능 측정, `opencad-site` 명령이 들어 있습니다.
 
+[0.3.2]: https://github.com/GyuTae-Kim/opencad-site-kit/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/GyuTae-Kim/opencad-site-kit/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/GyuTae-Kim/opencad-site-kit/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/GyuTae-Kim/opencad-site-kit/compare/v0.1.6...v0.2.0
