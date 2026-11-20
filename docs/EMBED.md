@@ -1,5 +1,7 @@
 # OpenCAD 앱을 내 웹페이지에 넣기
 
+[English](EMBED.en.md)
+
 OpenCAD의 네 앱(DWG·DXF 2D CAD, STEP·SketchUp·NC 3D 뷰어)을 블로그·포트폴리오·제품 소개 페이지 같은 내 페이지 안에 띄우는 방법입니다.
 서버도, 빌드 도구도, 계정도 필요 없습니다.
 
