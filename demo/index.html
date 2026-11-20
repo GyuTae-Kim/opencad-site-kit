@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenCAD 임베드 데모</title>
+<meta name="description" content="스크립트 한 줄로 내 웹페이지에 DWG·DXF·STEP·SKP·NC 뷰어를 넣는 <opencad-viewer> 데모. Embed OpenCAD viewers in your web page with one script tag.">
+<link rel="stylesheet" href="demo.css">
+<!-- 설치 안내와 같은 줄: 판을 고정한 jsDelivr 주소와 무결성 값 -->
+<script type="module"
+  src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.2/embed/opencad-embed.js"
+  integrity="sha384-C1/pM8qbTaq6huCkD80qglQMMO7xeIhOsLMPe4++k+SNOHYvJ7QVZxJWsOffqULn"
+  crossorigin="anonymous"></script>
+<script type="module" src="demo.js"></script>
+</head>
+<body>
+<header>
+  <h1>OpenCAD 임베드 데모 <span lang="en">Embed demo</span></h1>
+  <p>스크립트 한 줄과 <code>&lt;opencad-viewer&gt;</code> 요소 하나로 내 웹페이지에 CAD 뷰어를 넣습니다. 파일은 이 페이지와 뷰어 사이에서만 오가고 서버로 가지 않습니다.</p>
+  <p lang="en">One script tag and one <code>&lt;opencad-viewer&gt;</code> element put a CAD viewer in your page. Files stay between this page and the viewer; nothing is uploaded.</p>
+  <nav>
+    <a href="https://github.com/GyuTae-Kim/opencad-site-kit/blob/main/docs/EMBED.md">설치 안내</a>
+    <a href="https://github.com/GyuTae-Kim/opencad-site-kit/blob/main/docs/EMBED.en.md" lang="en">Install guide</a>
+    <a href="https://github.com/GyuTae-Kim/opencad-site-kit">GitHub</a>
+  </nav>
+</header>
+
+<main>
+  <div class="controls">
+    <div class="group" role="group" aria-label="예제 앱 (Sample app)">
+      <button type="button" data-app="step" aria-pressed="true">STEP</button>
+      <button type="button" data-app="dwgdxf" aria-pressed="false">DWG/DXF</button>
+      <button type="button" data-app="skp" aria-pressed="false">SKP</button>
+      <button type="button" data-app="nc" aria-pressed="false">NC</button>
+    </div>
+    <label class="lang">화면 언어 <span lang="en">Language</span>
+      <select id="lang">
+        <option value="ko">한국어</option>
+        <option value="en">English</option>
+        <option value="ja">日本語</option>
+        <option value="zh-CN">简体中文</option>
+        <option value="de">Deutsch</option>
+      </select>
+    </label>
+    <label class="file">내 파일 열기 <span lang="en">Open your file</span>
+      <input type="file" id="pick" accept=".dwg,.dxf,.step,.stp,.p21,.stpz,.skp,.nc,.ngc,.gcode,.tap,.cnc,.mpr,.pgi,.h,.xml">
+    </label>
+  </div>
+
+  <opencad-viewer id="viewer" app="step" sample lang="ko" title="OpenCAD 뷰어 데모"></opencad-viewer>
+  <p id="log" aria-live="polite">불러오는 중… <span lang="en">Loading…</span></p>
+
+  <section aria-labelledby="code-title">
+    <h2 id="code-title">이 데모에 넣은 코드 <span lang="en">The code on this page</span></h2>
+    <pre><code id="code"></code></pre>
+    <button type="button" id="copy">복사 <span lang="en">Copy</span></button>
+  </section>
+</main>
+
+<footer>
+  <p>MIT · <a href="https://gyutae-kim.github.io/opencad">OpenCAD</a></p>
+</footer>
+</body>
+</html>

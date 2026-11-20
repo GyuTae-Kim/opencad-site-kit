@@ -5,6 +5,8 @@
 OpenCAD의 네 앱(DWG·DXF 2D CAD, STEP·SketchUp·NC 3D 뷰어)을 블로그·포트폴리오·제품 소개 페이지 같은 내 페이지 안에 띄우는 방법입니다.
 서버도, 빌드 도구도, 계정도 필요 없습니다.
 
+[데모 페이지](https://gyutae-kim.github.io/opencad-site-kit/)에서 바로 써 볼 수 있습니다.
+
 ## 바로 쓰기
 
 ```html

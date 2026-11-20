@@ -1,0 +1,33 @@
+name: Demo page
+
+# demo/ 폴더를 GitHub Pages(https://gyutae-kim.github.io/opencad-site-kit/)로 낸다.
+# 데모는 설치 안내와 같은 jsDelivr 주소·무결성 값을 쓰므로, 판을 올리는 PR에서 demo/index.html도 함께 바뀐다(test/embed-docs.test.ts).
+on:
+  push:
+    branches: [main]
+    paths: ['demo/**', '.github/workflows/pages.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: demo
+      - id: deployment
+        uses: actions/deploy-pages@v4

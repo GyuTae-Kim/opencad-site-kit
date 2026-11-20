@@ -1,0 +1,43 @@
+:root {
+  color-scheme: light dark;
+  --bg: #f7f7f5;
+  --fg: #1d1d1b;
+  --muted: #5b5b57;
+  --line: #d6d6d0;
+  --accent: #1f5fbf;
+  --panel: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161615;
+    --fg: #ececea;
+    --muted: #a6a6a0;
+    --line: #3a3a37;
+    --accent: #7aa7f0;
+    --panel: #20201e;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+header, main, footer { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+header { padding-top: 24px; }
+h1 { font-size: 1.6rem; margin: 0 0 8px; }
+h1 span, h2 span, label span, #log span, button span { color: var(--muted); font-weight: normal; font-size: 0.85em; }
+header p { margin: 4px 0; color: var(--muted); }
+nav { display: flex; flex-wrap: wrap; gap: 16px; margin: 12px 0 20px; }
+a { color: var(--accent); }
+.controls { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; margin-bottom: 12px; }
+.group { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.group button { border: 0; border-right: 1px solid var(--line); background: var(--panel); color: var(--fg); padding: 6px 14px; font: inherit; cursor: pointer; }
+.group button:last-child { border-right: 0; }
+.group button[aria-pressed="true"] { background: var(--accent); color: var(--panel); }
+label { display: inline-flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+select, input[type="file"] { font: inherit; color: inherit; }
+select { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; }
+opencad-viewer { height: min(70vh, 600px); min-height: 360px; border-color: var(--line); }
+#log { min-height: 1.6em; color: var(--muted); font-size: 0.9rem; margin: 8px 0 24px; overflow-wrap: anywhere; }
+h2 { font-size: 1.1rem; margin: 0 0 8px; }
+pre { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px; overflow-x: auto; font-size: 0.85rem; line-height: 1.5; margin: 0 0 8px; }
+#copy { font: inherit; padding: 4px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--fg); cursor: pointer; }
+button:focus-visible, select:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+footer { padding: 32px 16px 24px; color: var(--muted); font-size: 0.9rem; }
