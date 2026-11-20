@@ -1,7 +1,22 @@
 # 바뀐 점
 
-판마다 무엇이 바뀌었는지 적습니다. 판 이름은 `package.json`의 `version`과 같은 태그(`v0.3.0`)이고, 앱은 그 태그로 고정해 씁니다
-(`github:GyuTae-Kim/opencad-site-kit#v0.3.0`). 판을 올리는 규칙은 [README "판 올리기"](README.md#판-올리기)에 있습니다.
+판마다 무엇이 바뀌었는지 적습니다. 판 이름은 `package.json`의 `version`과 같은 태그(`v0.3.1`)이고, 앱은 그 태그로 고정해 씁니다
+(`github:GyuTae-Kim/opencad-site-kit#v0.3.1`). 판을 올리는 규칙은 [README "판 올리기"](README.md#판-올리기)에 있습니다.
+
+## [0.3.1] - 2026-11-20
+
+`<opencad-viewer>`만 고친 판입니다. 앱 빌드 결과는 0.3.0과 같고, CDN 주소(`@v0.3.1`)와 `integrity` 값이 바뀌었습니다.
+
+### 고친 것
+
+- React 19에서 `<opencad-viewer app="step">`을 그리면 `Cannot set property app … which has only a getter` 오류로 화면이 깨지던 문제를 고쳤습니다. Vue·Svelte에서는 `app`이 경고와 함께 무시됐습니다.
+  이 프레임워크들은 요소에 같은 이름의 값이 있으면 속성 대신 그 값에 넣는데, `app`이 읽기 전용이었습니다. 이제 `viewer.app = 'nc'`가 `app` 속성을 바꿉니다.
+- `viewer.sample`을 더했습니다. `false`를 넣으면 속성을 지워, 프레임워크가 `sample="false"`를 남겨 예제가 열리는 일을 막습니다.
+
+### 더한 것
+
+- JSX 형 선언에 쓰는 `OpenCadViewerAttributes` 형을 내보냅니다.
+- 안내 문서에 「프레임워크에서 쓰기」(React·Next.js·Vue·Svelte·Angular)를 더했습니다.
 
 ## [0.3.0] - 2026-11-20
 
@@ -85,6 +100,7 @@
 첫 판입니다. 네 OpenCAD 앱이 저장소마다 복사해 쓰던 사이트 계층을 한 패키지로 모았습니다([#1](https://github.com/GyuTae-Kim/opencad-site-kit/pull/1)).
 다국어 페이지, 검색 정보와 사이트맵, 내용 수정일, 홈 화면 앱과 서비스 워커, 방문 통계, 성능 측정, `opencad-site` 명령이 들어 있습니다.
 
+[0.3.1]: https://github.com/GyuTae-Kim/opencad-site-kit/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/GyuTae-Kim/opencad-site-kit/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/GyuTae-Kim/opencad-site-kit/compare/v0.1.6...v0.2.0
 [0.1.6]: https://github.com/GyuTae-Kim/opencad-site-kit/compare/v0.1.5...v0.1.6

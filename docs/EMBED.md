@@ -8,7 +8,7 @@ OpenCAD의 네 앱(DWG·DXF 2D CAD, STEP·SketchUp·NC 3D 뷰어)을 블로그·
 ## 바로 쓰기
 
 ```html
-<script type="module" src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.0/embed/opencad-embed.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.1/embed/opencad-embed.js"></script>
 
 <opencad-viewer src="/models/bracket.step" style="height: 520px"></opencad-viewer>
 ```
@@ -16,7 +16,7 @@ OpenCAD의 네 앱(DWG·DXF 2D CAD, STEP·SketchUp·NC 3D 뷰어)을 블로그·
 - 요소가 파일 확장자를 보고 앱을 고릅니다: `.dwg`·`.dxf` → DWG/DXF 캐드, `.step`·`.stp`·`.p21`·`.stpz` → STEP 뷰어, `.skp` → SKP 뷰어,
   `.nc`·`.gcode`·`.mpr`·`.pgi`·`.h` 등 → NC 뷰어
 - 크기는 CSS로 정합니다(기본 높이 480px, 너비는 부모에 맞춤)
-- 스크립트는 한 파일(의존 없음, MIT)이라 내 사이트에 복사해 올려도 됩니다. jsDelivr 주소의 `@v0.3.0`처럼 판을 고정해 씁니다
+- 스크립트는 한 파일(의존 없음, MIT)이라 내 사이트에 복사해 올려도 됩니다. jsDelivr 주소의 `@v0.3.1`처럼 판을 고정해 씁니다
 - `integrity`(SRI)를 붙이는 법, npm으로 받는 법, iframe만 넣는 법은 [README "내 웹사이트에 OpenCAD 설치하기"](../README.md#내-웹사이트에-opencad-설치하기)에 있습니다
 
 방문자가 자기 파일을 열게 하려면 `src` 없이 `app`만 주거나, 파일 고르기를 이어 `open()`을 부릅니다.
@@ -49,7 +49,7 @@ OpenCAD의 네 앱(DWG·DXF 2D CAD, STEP·SketchUp·NC 3D 뷰어)을 블로그·
 | `loading` | `lazy`면 요소가 화면 200px 안으로 들어올 때 앱을 띄웁니다(`open()`을 부르면 바로). 한 페이지에 여럿을 넣을 때 씁니다. 0.3.0부터 |
 
 - `viewer.open(fileOrBlob, name?)` → `Promise<void>`: 앱이 열기를 마치면 풀리고, 못 받으면 `Error(code)`로 거절됩니다
-- `viewer.app`: 지금 띄운 앱 이름
+- `viewer.app`: 읽으면 지금 띄운 앱 이름, 넣으면 `app` 속성(0.3.1부터). `viewer.sample`: `sample` 속성이 있는지(넣을 수 있음, 0.3.1부터)
 - 이벤트(요소에서 올라옴): `opencad-ready`(`detail.accept` — 앱이 받는 확장자), `opencad-done`(`detail.id`), `opencad-error`(`detail.code`)
 
 | `code` | 까닭 |
@@ -61,6 +61,95 @@ OpenCAD의 네 앱(DWG·DXF 2D CAD, STEP·SketchUp·NC 3D 뷰어)을 블로그·
 | `bad-request` · `open-failed` | 넘긴 자료가 잘못됐거나 앱이 열기 중에 실패 |
 
 파일을 읽지 못한 까닭(깨진 파일 등)은 앱 화면이 알립니다. 이때도 `open()`은 풀립니다 — 앱이 열기를 마쳤다는 뜻입니다.
+
+## 프레임워크에서 쓰기
+
+요소는 표준 웹 컴포넌트라 React·Vue·Svelte·Angular에서 HTML 태그처럼 씁니다. 페이지에서 한 번 `import 'opencad-site-kit/embed'`(또는 CDN 스크립트)로 등록합니다.
+React 19·Vue·Svelte는 요소에 같은 이름의 값(`app`·`sample`·`lang`·`title`)이 있으면 속성 대신 그 값에 넣습니다. 이 방식은 0.3.1부터 맞게 동작합니다(0.3.0은 `app`을 주면 React 19에서 오류가 나고 Vue에서는 무시됨).
+
+### React
+
+```tsx
+import { useEffect, useRef } from 'react';
+import 'opencad-site-kit/embed';
+import type { OpenCadViewer } from 'opencad-site-kit/embed';
+
+export function CadViewer({ src }: { src: string }) {
+  const ref = useRef<OpenCadViewer>(null);
+  useEffect(() => {
+    const viewer = ref.current;
+    if (!viewer) return;
+    const done = (event: HTMLElementEventMap['opencad-done']) => console.log('열림', event.detail.id);
+    viewer.addEventListener('opencad-done', done);
+    return () => viewer.removeEventListener('opencad-done', done);
+  }, []);
+  return <opencad-viewer ref={ref} src={src} lang="en" loading="lazy" style={{ height: 480 }} />;
+}
+```
+
+- React 19는 `onopencad-done={(event) => …}`처럼 이벤트를 속성으로 바로 받습니다. React 18은 위처럼 ref로 겁니다
+- React 18은 값을 모두 문자열 속성으로 넣어 `sample={false}`도 `sample="false"`로 남습니다(예제가 열림). 예제를 열 때만 `sample`을 줍니다
+- TypeScript는 프로젝트에 한 번 다음 선언을 둡니다(예: `src/opencad-viewer.d.ts`)
+
+```ts
+import type { DetailedHTMLProps, HTMLAttributes } from 'react';
+import type { OpenCadEmbedEvents, OpenCadViewer, OpenCadViewerAttributes } from 'opencad-site-kit/embed';
+
+declare module 'react' {
+  namespace JSX {
+    interface IntrinsicElements {
+      'opencad-viewer': DetailedHTMLProps<HTMLAttributes<OpenCadViewer>, OpenCadViewer> & OpenCadViewerAttributes & {
+        // React 19에서 이벤트를 속성으로 받을 때
+        'onopencad-ready'?: (event: OpenCadEmbedEvents['opencad-ready']) => void;
+        'onopencad-done'?: (event: OpenCadEmbedEvents['opencad-done']) => void;
+        'onopencad-error'?: (event: OpenCadEmbedEvents['opencad-error']) => void;
+      };
+    }
+  }
+}
+```
+
+### Next.js
+
+요소를 등록하는 `import`는 브라우저에서 돌아야 하므로 App Router에서는 `'use client'` 컴포넌트에 둡니다. 서버에서 가져와도 오류는 없고(요소를 등록하지 않음) 태그는 브라우저에서 그려집니다.
+
+```tsx
+'use client';
+import 'opencad-site-kit/embed';
+
+export default function Cad() {
+  return <opencad-viewer src="/models/part.step" loading="lazy" style={{ height: 480 }} />;
+}
+```
+
+### Vue 3
+
+Vue가 요소를 자기 컴포넌트로 찾지 않게 알려 줍니다.
+
+```js
+// vite.config.js
+import vue from '@vitejs/plugin-vue';
+
+export default {
+  plugins: [vue({ template: { compilerOptions: { isCustomElement: (tag) => tag === 'opencad-viewer' } } })],
+};
+```
+
+```vue
+<script setup>
+import 'opencad-site-kit/embed';
+const done = (event) => console.log('열림', event.detail.id);
+</script>
+
+<template>
+  <opencad-viewer src="/models/part.step" lang="en" loading="lazy" style="height: 480px" @opencad-done="done" />
+</template>
+```
+
+### Svelte · Angular
+
+- Svelte: 설정 없이 `<opencad-viewer src={src} on:opencad-done={done} />`(Svelte 5는 `onopencad-done={done}`)
+- Angular: 요소를 쓰는 컴포넌트(또는 모듈)의 `schemas`에 `CUSTOM_ELEMENTS_SCHEMA`를 넣고 `(opencad-done)="done($event)"`로 받습니다
 
 ## 파일은 어디로 가나
 

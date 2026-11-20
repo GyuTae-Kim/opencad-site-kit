@@ -6,7 +6,7 @@ import { createLanguageMenu } from 'opencad-site-kit/i18n/language-menu';
 import { languages, translate, configureI18n } from 'opencad-site-kit/i18n/core';
 import { canUseServiceWorker, consumeLaunchFiles, registerServiceWorker, whenVisible, type SwContainer } from 'opencad-site-kit/pwa/client';
 import { acceptEmbeddedFiles, isFramed } from 'opencad-site-kit/embed/app';
-import { appForName, type OpenCadErrorCode, type OpenCadViewer } from 'opencad-site-kit/embed';
+import { appForName, type OpenCadErrorCode, type OpenCadViewer, type OpenCadViewerAttributes } from 'opencad-site-kit/embed';
 
 export function start(open: (file: File) => Promise<boolean>, offer: (apply: () => void) => void): OpenAttempt {
   configureI18n({ metadata: { url: 'https://gyutae-kim.github.io/opencad-step/' }, ...OPENCAD_SITE });
@@ -36,6 +36,12 @@ export async function embed(file: File): Promise<string | null> {
   window.addEventListener('opencad-error', (event) => console.log(event.detail.code));
   const made = document.createElement('opencad-viewer');
   made.setAttribute('app', 'step');
+  // 프레임워크처럼 값으로 넣기
+  made.app = 'nc';
+  made.app = null;
+  made.sample = true;
+  const props: OpenCadViewerAttributes = { src: '/m/a.step', app: 'step', lang: 'en', loading: 'lazy', sample: false };
+  for (const [name, value] of Object.entries(props)) if (typeof value === 'string') made.setAttribute(name, value);
   await made.open(file);
   await viewer?.open(file, file.name);
   return viewer?.app ?? appForName(file.name);

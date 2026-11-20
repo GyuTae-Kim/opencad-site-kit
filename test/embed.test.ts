@@ -294,6 +294,29 @@ describe('host side: <opencad-viewer>', () => {
     expect(later.iframe().src).toBe('https://gyutae-kim.github.io/opencad-nc/');
   });
 
+  // React 19·Vue는 요소에 같은 이름의 값이 있으면(key in element) 속성 대신 그 값에 넣는다
+  it('takes attributes as properties the way React 19 and Vue set them', () => {
+    const element = document.createElement('opencad-viewer') as OpenCadViewer;
+    const values: Record<string, unknown> = { app: 'nc', sample: true, lang: 'ja', title: 'CAD', src: 'a.dxf', name: 'b.nc', base: 'https://apps.example/', loading: 'eager' };
+    for (const name of OpenCadViewer.observedAttributes) {
+      if (name in element) expect(() => ((element as unknown as Record<string, unknown>)[name] = values[name])).not.toThrow();
+      else element.setAttribute(name, String(values[name]));
+    }
+    document.body.append(element);
+    expect(element.getAttribute('app')).toBe('nc');
+    expect(element.getAttribute('sample')).toBe('');
+    expect(element.shadowRoot!.querySelector('iframe')!.src).toBe('https://apps.example/opencad-nc/ja/?sample');
+    expect(element.shadowRoot!.querySelector('iframe')!.title).toBe('CAD');
+    element.sample = false;
+    expect(element.hasAttribute('sample')).toBe(false);
+    expect(element.shadowRoot!.querySelector('iframe')!.src).toBe('https://apps.example/opencad-nc/ja/');
+    element.app = 'skp';
+    expect(element.shadowRoot!.querySelector('iframe')!.src).toBe('https://apps.example/opencad-skp/ja/');
+    element.app = null;
+    expect(element.hasAttribute('app')).toBe(false);
+    expect(element.app).toBe('nc'); // 남은 name(b.nc)의 확장자로 고른다
+  });
+
   it('loads at once when the browser has no IntersectionObserver', () => {
     vi.stubGlobal('IntersectionObserver', undefined);
     const { iframe } = mount({ app: 'skp', loading: 'lazy' });

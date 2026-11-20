@@ -17,10 +17,26 @@ export function appUrl(app: string, options?: { base?: string; lang?: string; sa
 export class OpenCadViewer extends HTMLElement {
   static apps: Record<string, EmbedApp>;
   static observedAttributes: string[];
-  /** 열린 앱 이름 */
-  readonly app: string | null;
+  /** 읽으면 지금 띄운 앱 이름, 쓰면 app 속성(null이면 지움) */
+  get app(): string | null;
+  set app(value: string | null | undefined);
+  /** sample 속성이 있는지(false면 지움) */
+  sample: boolean;
   /** 파일을 앱에 넘긴다. 앱이 열기를 마치면 풀리고, 못 받으면 Error(code)로 거절된다 */
   open(file: Blob, name?: string): Promise<void>;
+}
+/**
+ * <opencad-viewer>의 HTML 속성. React·Preact·Solid 같은 JSX의 IntrinsicElements 선언에 쓴다(docs/EMBED.md "프레임워크에서 쓰기")
+ */
+export interface OpenCadViewerAttributes {
+  src?: string;
+  app?: 'dwgdxf' | 'step' | 'skp' | 'nc' | (string & {});
+  name?: string;
+  lang?: 'ko' | 'en' | 'ja' | 'zh-CN' | 'de' | (string & {});
+  base?: string;
+  sample?: boolean;
+  title?: string;
+  loading?: 'lazy' | 'eager';
 }
 /** opencad-error의 code(요소가 정하는 것과 앱이 보내는 것). 새 판의 앱이 보낸 다른 코드도 문자열 그대로 온다 */
 export type OpenCadErrorCode = 'timeout' | 'fetch-failed' | 'unsupported' | 'too-large' | 'bad-request' | 'open-failed';
