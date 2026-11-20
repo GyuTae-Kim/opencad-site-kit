@@ -5,7 +5,20 @@
 
 ## 아직 내지 않은 것
 
-- 문서: README에 「내 웹사이트에 OpenCAD 설치하기」를 더했습니다. CDN과 무결성 값, 파일 두기, npm, iframe, 앱 직접 배포의 다섯 가지 방법입니다([#9](https://github.com/GyuTae-Kim/opencad-site-kit/pull/9))
+`<opencad-viewer>` 파일(`embed/opencad-embed.js`)이 바뀌어, 다음 판을 내면 설치 안내의 CDN 주소와 무결성 값도 함께 바꿉니다.
+
+### 더한 것
+
+- `<opencad-viewer loading="lazy">`: 요소가 화면 200px 안으로 들어올 때 앱을 띄웁니다. `open()`을 부르면 바로 띄웁니다. 한 페이지에 뷰어를 여럿 넣을 때 씁니다([#14](https://github.com/GyuTae-Kim/opencad-site-kit/pull/14)).
+- TypeScript에서 `opencad-ready`·`opencad-done`·`opencad-error` 이벤트의 `detail` 형이 형 변환 없이 잡힙니다(요소·`document`·`window`). 오류 코드 형 `OpenCadErrorCode`를 내보냅니다([#13](https://github.com/GyuTae-Kim/opencad-site-kit/pull/13)).
+- `npm run embed:snippet`: 태그 하나를 받아 무결성 값을 붙인 `<script>` 줄을 찍습니다([#11](https://github.com/GyuTae-Kim/opencad-site-kit/pull/11)).
+
+### 문서
+
+- README에 「내 웹사이트에 OpenCAD 설치하기」를 더했습니다. CDN과 무결성 값, 파일 두기, npm, iframe, 앱 직접 배포의 다섯 가지 방법입니다([#9](https://github.com/GyuTae-Kim/opencad-site-kit/pull/9)).
+- 영어 설치 안내 `docs/EMBED.en.md`를 더했습니다([#10](https://github.com/GyuTae-Kim/opencad-site-kit/pull/10)).
+- 설치 안내의 CDN 주소와 npm 태그가 모두 같은 판인지, 무결성 값이 그 태그 파일과 맞는지 시험이 확인합니다([#11](https://github.com/GyuTae-Kim/opencad-site-kit/pull/11)).
+- 변경 기록, 기여 안내, 보안 신고 안내, 이슈 틀을 더했습니다([#12](https://github.com/GyuTae-Kim/opencad-site-kit/pull/12)).
 
 ## [0.2.0] - 2026-11-19
 
