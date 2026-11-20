@@ -250,6 +250,56 @@ describe('host side: <opencad-viewer>', () => {
     vi.restoreAllMocks();
   });
 
+  it('waits with loading="lazy" until the element nears the screen or open() is called', async () => {
+    type Watch = { callback: IntersectionObserverCallback; options?: IntersectionObserverInit; targets: Element[]; disconnected: boolean };
+    const watches: Watch[] = [];
+    vi.stubGlobal('IntersectionObserver', class {
+      watch: Watch;
+      constructor(callback: IntersectionObserverCallback, options?: IntersectionObserverInit) {
+        this.watch = { callback, options, targets: [], disconnected: false };
+        watches.push(this.watch);
+      }
+      observe(target: Element) { this.watch.targets.push(target); }
+      disconnect() { this.watch.disconnected = true; }
+    });
+    const seen = (watch: Watch, isIntersecting: boolean) => watch.callback([{ isIntersecting } as IntersectionObserverEntry], {} as IntersectionObserver);
+    const frameOf = (element: OpenCadViewer) => element.shadowRoot!.querySelector('iframe');
+
+    const lazy = mount({ src: 'a.step', loading: 'lazy', base: 'https://apps.example/' });
+    expect(frameOf(lazy.element)).toBeNull();
+    expect(watches).toHaveLength(1);
+    expect(watches[0]!.targets).toEqual([lazy.element]);
+    expect(watches[0]!.options?.rootMargin).toBe('200px');
+    seen(watches[0]!, false);
+    expect(frameOf(lazy.element)).toBeNull();
+    seen(watches[0]!, true);
+    expect(lazy.iframe().src).toBe('https://apps.example/opencad-step/');
+    expect(watches[0]!.disconnected).toBe(true);
+
+    // 화면 밖에서도 open()을 부르면 그 파일의 앱을 바로 띄운다
+    const picked = mount({ loading: 'lazy', base: 'https://apps.example/' });
+    expect(frameOf(picked.element)).toBeNull();
+    const opened = picked.element.open(new File(['0\nEOF'], 'plan.dxf'));
+    expect(picked.iframe().src).toBe('https://apps.example/opencad-dwgdxf/');
+    expect(watches[1]!.disconnected).toBe(true);
+    picked.fromApp({ type: 'opencad:ready', protocol: 1 });
+    expect(picked.sent()).toHaveBeenCalledTimes(1);
+    picked.fromApp({ type: 'opencad:done', protocol: 1, id: 'f1' });
+    await expect(opened).resolves.toBeUndefined();
+
+    // 속성을 빼도 바로 띄운다
+    const later = mount({ app: 'nc', loading: 'lazy' });
+    expect(frameOf(later.element)).toBeNull();
+    later.element.removeAttribute('loading');
+    expect(later.iframe().src).toBe('https://gyutae-kim.github.io/opencad-nc/');
+  });
+
+  it('loads at once when the browser has no IntersectionObserver', () => {
+    vi.stubGlobal('IntersectionObserver', undefined);
+    const { iframe } = mount({ app: 'skp', loading: 'lazy' });
+    expect(iframe().src).toBe('https://gyutae-kim.github.io/opencad-skp/');
+  });
+
   it('reloads only when the app address changes', async () => {
     vi.stubGlobal('fetch', async () => new Response('x'));
     const { element, iframe, sent, fromApp } = mount({ src: 'a.step', base: 'https://apps.example/' });
