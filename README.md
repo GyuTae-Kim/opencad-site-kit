@@ -27,8 +27,8 @@ OpenCAD 앱(STEP·SKP·NC·DWG·DXF)이 함께 쓰는 사이트 계층 도구입
 
 ```html
 <script type="module"
-  src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.0/embed/opencad-embed.js"
-  integrity="sha384-CY1O0cUbTNF8wtB63Oq+16i5fvJJ+dNm54zPnRBOU8qgSQ76Jy6TBUNbSwHbdauc"
+  src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.1/embed/opencad-embed.js"
+  integrity="sha384-9+N96YcB5HSUP8VitMtn2X+WBwrGeNq4r/qMolw457g43LaJV1rpxVubR/E0YJRk"
   crossorigin="anonymous"></script>
 
 <opencad-viewer src="/files/bracket.step" lang="en" style="height: 520px"></opencad-viewer>
@@ -36,7 +36,7 @@ OpenCAD 앱(STEP·SKP·NC·DWG·DXF)이 함께 쓰는 사이트 계층 도구입
 
 - 요소는 `src`의 확장자로 앱을 고릅니다: `.dwg`·`.dxf`는 DWG/DXF 캐드, `.step`·`.stp`는 STEP 뷰어, `.skp`는 SKP 뷰어, `.nc`·`.gcode` 등은 NC 뷰어입니다
 - `src` 파일은 내 페이지가 직접 받아 앱에 넘깁니다. 그래서 내 사이트에 있는 파일이거나 CORS를 허용한 주소여야 합니다
-- 주소에 `@v0.3.0`처럼 태그를 붙여 판을 고정합니다. 태그는 옮기지 않으므로 같은 주소는 늘 같은 파일이고, `integrity` 값도 그대로 맞습니다.
+- 주소에 `@v0.3.1`처럼 태그를 붙여 판을 고정합니다. 태그는 옮기지 않으므로 같은 주소는 늘 같은 파일이고, `integrity` 값도 그대로 맞습니다.
   파일이 한 바이트라도 다르면 브라우저가 실행하지 않습니다. 새 판으로 올릴 때는 주소와 `integrity`를 함께 바꿉니다:
   `curl -sL <스크립트 주소> | openssl dgst -sha384 -binary | openssl base64 -A`
 - 크기는 CSS로 정합니다(기본 높이 480px, 너비는 부모에 맞춤). 화면 언어는 `lang`(`ko`·`en`·`ja`·`zh-CN`·`de`)으로 고릅니다
@@ -64,7 +64,7 @@ OpenCAD 앱(STEP·SKP·NC·DWG·DXF)이 함께 쓰는 사이트 계층 도구입
 요소 스크립트는 의존 없는 파일 하나입니다(12.6 KB, gzip 4.8 KB). 받아서 내 사이트에 올리고 그 주소로 불러옵니다.
 
 ```bash
-curl -L -o opencad-embed.js https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.0/embed/opencad-embed.js
+curl -L -o opencad-embed.js https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.1/embed/opencad-embed.js
 ```
 
 ```html
@@ -78,7 +78,7 @@ MIT 조건대로 이 저장소의 저작권·허가 문구([LICENSE](LICENSE))�
 npm 레지스트리에는 올리지 않았으므로 GitHub 태그로 받습니다(설치하는 컴퓨터에 git이 있어야 합니다).
 
 ```bash
-npm install "opencad-site-kit@github:GyuTae-Kim/opencad-site-kit#v0.3.0"
+npm install "opencad-site-kit@github:GyuTae-Kim/opencad-site-kit#v0.3.1"
 ```
 
 ```js
@@ -89,7 +89,7 @@ import 'opencad-site-kit/embed';   // <opencad-viewer>를 등록한다. 번들�
 - 형 선언이 들어 있어 TypeScript에서 `document.querySelector('opencad-viewer')`가 `OpenCadViewer`로 잡힙니다.
   `addEventListener('opencad-done', (event) => event.detail.id)`처럼 이벤트의 `detail` 형도 형 변환 없이 잡힙니다(요소·`document`·`window` 모두)
 - 서버에서 페이지를 그리는 프레임워크(SSR)에서 가져와도 오류가 나지 않습니다. 브라우저가 아니면 요소를 등록하지 않고, 요소는 브라우저에서 그려집니다
-- 이벤트는 요소에 `addEventListener('opencad-done', …)`로 겁니다. React 같은 프레임워크에서는 ref로 요소를 잡아 겁니다
+- 이벤트는 요소에 `addEventListener('opencad-done', …)`로 겁니다. React·Vue·Next.js 예는 [안내 문서 "프레임워크에서 쓰기"](docs/EMBED.md#프레임워크에서-쓰기)에 있습니다
 
 ### 4. iframe만 넣기
 
@@ -159,7 +159,7 @@ npm에 올리지 않고 GitHub 의존으로 씁니다. 빌드 때만 쓰므로 `
 
 ```json
 "devDependencies": {
-  "opencad-site-kit": "github:GyuTae-Kim/opencad-site-kit#v0.3.0"
+  "opencad-site-kit": "github:GyuTae-Kim/opencad-site-kit#v0.3.1"
 },
 "scripts": {
   "build": "tsc --noEmit && vite build && npm run check:seo && npm run check:i18n",

@@ -16,8 +16,8 @@ The script, this repository and the four app repositories are public under the M
 
 ```html
 <script type="module"
-  src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.0/embed/opencad-embed.js"
-  integrity="sha384-CY1O0cUbTNF8wtB63Oq+16i5fvJJ+dNm54zPnRBOU8qgSQ76Jy6TBUNbSwHbdauc"
+  src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.1/embed/opencad-embed.js"
+  integrity="sha384-9+N96YcB5HSUP8VitMtn2X+WBwrGeNq4r/qMolw457g43LaJV1rpxVubR/E0YJRk"
   crossorigin="anonymous"></script>
 
 <opencad-viewer src="/files/bracket.step" lang="en" style="height: 520px"></opencad-viewer>
@@ -27,7 +27,7 @@ The script, this repository and the four app repositories are public under the M
 - Your page downloads `src` itself and hands the bytes to the app. The file must be on your own site or on a server that allows CORS.
 - **The app UI is Korean by default.** Set `lang` to `en`, `ja`, `zh-CN` or `de` for another language.
 - Size it with CSS. The default height is 480px, and the width follows the parent.
-- `@v0.3.0` pins the version. Tags never move, so the URL always serves the same bytes and the `integrity` hash keeps matching.
+- `@v0.3.1` pins the version. Tags never move, so the URL always serves the same bytes and the `integrity` hash keeps matching.
   If the file differs by a single byte, the browser refuses to run it.
   When you upgrade, change the URL and the hash together:
 
@@ -50,7 +50,7 @@ The script, this repository and the four app repositories are public under the M
 The element is a single file with no dependencies (12.6 KB, 4.8 KB gzipped). Download it and serve it from your site.
 
 ```bash
-curl -L -o opencad-embed.js https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.0/embed/opencad-embed.js
+curl -L -o opencad-embed.js https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.1/embed/opencad-embed.js
 ```
 
 ```html
@@ -65,7 +65,7 @@ The apps themselves still load from `https://gyutae-kim.github.io/`.
 The package isn't on the npm registry, so install it from the GitHub tag (git must be installed on the machine).
 
 ```bash
-npm install "opencad-site-kit@github:GyuTae-Kim/opencad-site-kit#v0.3.0"
+npm install "opencad-site-kit@github:GyuTae-Kim/opencad-site-kit#v0.3.1"
 ```
 
 ```js
@@ -76,7 +76,7 @@ import 'opencad-site-kit/embed';   // registers <opencad-viewer>; only this one 
 - Type declarations are included, so `document.querySelector('opencad-viewer')` is typed as `OpenCadViewer` in TypeScript.
   Event `detail` is typed too, without casts: `addEventListener('opencad-done', (event) => event.detail.id)` on the element, `document` or `window` (since 0.3.0).
 - Importing it during server-side rendering is safe. Outside a browser it doesn't register anything; the element renders in the browser.
-- Listen for events with `addEventListener('opencad-done', …)` on the element. In React and similar frameworks, get the element through a ref.
+- Listen for events with `addEventListener('opencad-done', …)` on the element. See [Using it from a framework](#using-it-from-a-framework) for React, Vue and Next.js.
 
 ### 4. Plain iframe
 
@@ -145,7 +145,7 @@ Without `app`, `open()` switches to whichever app handles the file's extension.
 | `loading` | With `lazy`, the app loads when the element comes within 200px of the viewport (right away if you call `open()`). Use it when a page has several viewers. Since 0.3.0. |
 
 - `viewer.open(fileOrBlob, name?)` returns `Promise<void>`. It resolves when the app has finished opening the file and rejects with `Error(code)` if the app can't take it.
-- `viewer.app` is the name of the app currently shown.
+- `viewer.app` reads the app currently shown; setting it sets the `app` attribute (since 0.3.1). `viewer.sample` tells whether `sample` is set and can be set too (since 0.3.1).
 - Events bubble from the element: `opencad-ready` (`detail.accept`: extensions the app takes), `opencad-done` (`detail.id`), `opencad-error` (`detail.code`).
 
 | `code` | Reason |
@@ -158,6 +158,95 @@ Without `app`, `open()` switches to whichever app handles the file's extension.
 
 A broken or unreadable file is reported inside the app. `open()` still resolves in that case, because the app did finish handling it.
 `open()` can also reject with `replaced` (the element switched to another app) or `disconnected` (the element was removed from the page).
+
+## Using it from a framework
+
+The element is a standard web component, so React, Vue, Svelte and Angular use it like an HTML tag. Register it once with `import 'opencad-site-kit/embed'` (or the CDN script).
+React 19, Vue and Svelte set a property instead of an attribute when the element has one of the same name (`app`, `sample`, `lang`, `title`). This works correctly since 0.3.1 (with 0.3.0, `app` throws in React 19 and is ignored in Vue).
+
+### React
+
+```tsx
+import { useEffect, useRef } from 'react';
+import 'opencad-site-kit/embed';
+import type { OpenCadViewer } from 'opencad-site-kit/embed';
+
+export function CadViewer({ src }: { src: string }) {
+  const ref = useRef<OpenCadViewer>(null);
+  useEffect(() => {
+    const viewer = ref.current;
+    if (!viewer) return;
+    const done = (event: HTMLElementEventMap['opencad-done']) => console.log('opened', event.detail.id);
+    viewer.addEventListener('opencad-done', done);
+    return () => viewer.removeEventListener('opencad-done', done);
+  }, []);
+  return <opencad-viewer ref={ref} src={src} lang="en" loading="lazy" style={{ height: 480 }} />;
+}
+```
+
+- React 19 also takes events as props: `onopencad-done={(event) => …}`. With React 18, use a ref as above.
+- React 18 sets every value as a string attribute, so `sample={false}` becomes `sample="false"` and still opens the sample. Only pass `sample` when you want the sample.
+- For TypeScript, add this declaration once to your project (for example `src/opencad-viewer.d.ts`):
+
+```ts
+import type { DetailedHTMLProps, HTMLAttributes } from 'react';
+import type { OpenCadEmbedEvents, OpenCadViewer, OpenCadViewerAttributes } from 'opencad-site-kit/embed';
+
+declare module 'react' {
+  namespace JSX {
+    interface IntrinsicElements {
+      'opencad-viewer': DetailedHTMLProps<HTMLAttributes<OpenCadViewer>, OpenCadViewer> & OpenCadViewerAttributes & {
+        // React 19 event props
+        'onopencad-ready'?: (event: OpenCadEmbedEvents['opencad-ready']) => void;
+        'onopencad-done'?: (event: OpenCadEmbedEvents['opencad-done']) => void;
+        'onopencad-error'?: (event: OpenCadEmbedEvents['opencad-error']) => void;
+      };
+    }
+  }
+}
+```
+
+### Next.js
+
+The import that registers the element has to run in the browser, so with the App Router put it in a `'use client'` component. Importing it on the server is safe (nothing is registered there), and the tag renders in the browser.
+
+```tsx
+'use client';
+import 'opencad-site-kit/embed';
+
+export default function Cad() {
+  return <opencad-viewer src="/models/part.step" loading="lazy" style={{ height: 480 }} />;
+}
+```
+
+### Vue 3
+
+Tell Vue the tag is not one of its components:
+
+```js
+// vite.config.js
+import vue from '@vitejs/plugin-vue';
+
+export default {
+  plugins: [vue({ template: { compilerOptions: { isCustomElement: (tag) => tag === 'opencad-viewer' } } })],
+};
+```
+
+```vue
+<script setup>
+import 'opencad-site-kit/embed';
+const done = (event) => console.log('opened', event.detail.id);
+</script>
+
+<template>
+  <opencad-viewer src="/models/part.step" lang="en" loading="lazy" style="height: 480px" @opencad-done="done" />
+</template>
+```
+
+### Svelte and Angular
+
+- Svelte: no setup. `<opencad-viewer src={src} on:opencad-done={done} />` (Svelte 5: `onopencad-done={done}`).
+- Angular: add `CUSTOM_ELEMENTS_SCHEMA` to the `schemas` of the component (or module) that uses the tag, and listen with `(opencad-done)="done($event)"`.
 
 ## Where your files go
 

@@ -1,7 +1,7 @@
 /**
  * <opencad-viewer> — 내 웹페이지에 OpenCAD 앱(DWG·DXF 2D CAD, STEP·SketchUp·NC 3D 뷰어)을 넣는 요소. 의존 없는 한 파일, MIT.
  *
- *   <script type="module" src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.0/embed/opencad-embed.js"></script>
+ *   <script type="module" src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.1/embed/opencad-embed.js"></script>
  *   <opencad-viewer src="/models/bracket.step" style="height: 480px"></opencad-viewer>
  *
  * 속성
@@ -13,6 +13,7 @@
  * - sample  파일 대신 그 앱의 예제를 연다(app과 함께)
  * - title   iframe의 접근성 이름
  * - loading lazy면 요소가 화면 가까이(200px) 올 때 앱을 띄운다(open()을 부르면 바로). 한 페이지에 여럿 넣을 때
+ * 값     app(읽기: 지금 띄운 앱, 쓰기: app 속성) · sample(불리언) · lang · title — 속성과 같다(React 19·Vue가 속성 대신 넣는 곳)
  * 함수   open(file | blob, name?) → Promise<void> — 사용자가 고른 파일 등을 넘긴다(형식이 다르면 그 앱으로 바꾼다)
  * 이벤트 opencad-ready { accept } · opencad-done { id } · opencad-error { id, code }
  *        code: timeout(앱이 답하지 않음) · fetch-failed · unsupported · too-large · bad-request · open-failed
@@ -147,6 +148,21 @@ export class OpenCadViewer extends Base {
   /** 열린 앱 이름 */
   get app() {
     return this.#app();
+  }
+
+  /** app 속성을 바꾼다(null·빈 값이면 지운다). React 19·Vue는 요소에 같은 이름의 값이 있으면 속성 대신 여기에 넣는다 */
+  set app(value) {
+    if (value === null || value === undefined || value === '') this.removeAttribute('app');
+    else this.setAttribute('app', String(value));
+  }
+
+  /** sample 속성이 있는지. false를 넣으면 속성을 지운다(프레임워크가 false를 문자열 "false" 속성으로 남기지 않게) */
+  get sample() {
+    return this.hasAttribute('sample');
+  }
+
+  set sample(value) {
+    this.toggleAttribute('sample', Boolean(value));
   }
 
   /** 파일(File·Blob)을 앱에 넘긴다. app 속성이 없고 형식이 다르면 그 형식의 앱으로 바꾼다 */
