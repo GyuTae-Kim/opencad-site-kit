@@ -74,6 +74,7 @@ import 'opencad-site-kit/embed';   // registers <opencad-viewer>; only this one 
 
 - No runtime dependencies and no build step on install. `jsdom` and `vite` are optional peers and aren't installed.
 - Type declarations are included, so `document.querySelector('opencad-viewer')` is typed as `OpenCadViewer` in TypeScript.
+  Event `detail` is typed too, without casts: `addEventListener('opencad-done', (event) => event.detail.id)` on the element, `document` or `window` (**in the release after v0.2.0**).
 - Importing it during server-side rendering is safe. Outside a browser it doesn't register anything; the element renders in the browser.
 - Listen for events with `addEventListener('opencad-done', …)` on the element. In React and similar frameworks, get the element through a ref.
 
@@ -141,6 +142,7 @@ Without `app`, `open()` switches to whichever app handles the file's extension.
 | `base` | Where the apps live (default `https://gyutae-kim.github.io/`). Your own address if you deploy the apps yourself |
 | `sample` | Opens the app's sample instead of a file (use with `app`) |
 | `title` | Accessible name of the iframe (defaults to "OpenCAD STEP viewer" and so on) |
+| `loading` | With `lazy`, the app loads when the element comes within 200px of the viewport (right away if you call `open()`). Use it when a page has several viewers. **In the release after v0.2.0** |
 
 - `viewer.open(fileOrBlob, name?)` returns `Promise<void>`. It resolves when the app has finished opening the file and rejects with `Error(code)` if the app can't take it.
 - `viewer.app` is the name of the app currently shown.
