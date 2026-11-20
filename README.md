@@ -86,7 +86,8 @@ import 'opencad-site-kit/embed';   // <opencad-viewer>를 등록한다. 번들�
 ```
 
 - 패키지는 런타임 의존이 없고 설치 때 빌드하지 않습니다. `jsdom`·`vite`는 선택 의존이라 함께 깔리지 않습니다
-- 형 선언이 들어 있어 TypeScript에서 `document.querySelector('opencad-viewer')`가 `OpenCadViewer`로 잡힙니다
+- 형 선언이 들어 있어 TypeScript에서 `document.querySelector('opencad-viewer')`가 `OpenCadViewer`로 잡힙니다.
+  `addEventListener('opencad-done', (event) => event.detail.id)`처럼 이벤트의 `detail` 형도 형 변환 없이 잡힙니다(요소·`document`·`window` 모두)
 - 서버에서 페이지를 그리는 프레임워크(SSR)에서 가져와도 오류가 나지 않습니다. 브라우저가 아니면 요소를 등록하지 않고, 요소는 브라우저에서 그려집니다
 - 이벤트는 요소에 `addEventListener('opencad-done', …)`로 겁니다. React 같은 프레임워크에서는 ref로 요소를 잡아 겁니다
 

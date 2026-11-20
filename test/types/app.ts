@@ -6,7 +6,7 @@ import { createLanguageMenu } from 'opencad-site-kit/i18n/language-menu';
 import { languages, translate, configureI18n } from 'opencad-site-kit/i18n/core';
 import { canUseServiceWorker, consumeLaunchFiles, registerServiceWorker, whenVisible, type SwContainer } from 'opencad-site-kit/pwa/client';
 import { acceptEmbeddedFiles, isFramed } from 'opencad-site-kit/embed/app';
-import { appForName, type OpenCadViewer } from 'opencad-site-kit/embed';
+import { appForName, type OpenCadErrorCode, type OpenCadViewer } from 'opencad-site-kit/embed';
 
 export function start(open: (file: File) => Promise<boolean>, offer: (apply: () => void) => void): OpenAttempt {
   configureI18n({ metadata: { url: 'https://gyutae-kim.github.io/opencad-step/' }, ...OPENCAD_SITE });
@@ -26,7 +26,17 @@ export function start(open: (file: File) => Promise<boolean>, offer: (apply: () 
 /** 호스트 페이지: <opencad-viewer> 요소 */
 export async function embed(file: File): Promise<string | null> {
   const viewer: OpenCadViewer | null = document.querySelector('opencad-viewer');
-  viewer?.addEventListener('opencad-error', (event) => console.log((event as CustomEvent<{ code: string }>).detail.code));
+  // 이벤트 detail은 형 변환 없이 잡힌다(요소에서, 그리고 올라온 것을 document·window에서)
+  viewer?.addEventListener('opencad-ready', (event) => console.log(event.detail.accept?.join(', ') ?? '모든 형식'));
+  viewer?.addEventListener('opencad-error', (event) => {
+    const code: OpenCadErrorCode | string = event.detail.code;
+    if (code === 'timeout') console.log('앱이 답하지 않음', event.detail.id);
+  });
+  document.addEventListener('opencad-done', (event) => console.log(event.detail.id));
+  window.addEventListener('opencad-error', (event) => console.log(event.detail.code));
+  const made = document.createElement('opencad-viewer');
+  made.setAttribute('app', 'step');
+  await made.open(file);
   await viewer?.open(file, file.name);
   return viewer?.app ?? appForName(file.name);
 }
