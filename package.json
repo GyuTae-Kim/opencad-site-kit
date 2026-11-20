@@ -102,7 +102,7 @@
     "./package.json": "./package.json"
   },
   "bin": {
-    "opencad-site": "./bin/opencad-site.mjs"
+    "opencad-site": "bin/opencad-site.mjs"
   },
   "files": [
     "i18n",

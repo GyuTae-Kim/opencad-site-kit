@@ -3,6 +3,12 @@
 판마다 무엇이 바뀌었는지 적습니다. 같은 내용을 [GitHub 릴리스](https://github.com/GyuTae-Kim/opencad-site-kit/releases)에도 올립니다. 판 이름은 `package.json`의 `version`과 같은 태그(`v0.3.3`)이고, 앱은 그 태그로 고정해 씁니다
 (`github:GyuTae-Kim/opencad-site-kit#v0.3.3`). 판을 올리는 규칙은 [README "판 올리기"](README.md#판-올리기)에 있습니다.
 
+## 아직 내지 않은 것
+
+### 고친 것
+
+- `package.json`의 `bin` 경로를 `bin/opencad-site.mjs`로 적었습니다. 앞의 `./` 때문에 `npm publish`가 「npm auto-corrected some errors」 경고를 냈습니다(설치된 `opencad-site` 명령은 0.3.3에서도 그대로 동작).
+
 ## [0.3.3] - 2026-11-20
 
 npm 레지스트리에 처음 올리는 판입니다(`npm install opencad-site-kit`). 코드는 0.3.2와 같고 앱 빌드 결과도 같습니다.
