@@ -319,6 +319,9 @@ initAnalytics({
 - 같은 입력에서 앱 출력(HTML·앱 정보·사이트맵·sw.js·번역)을 바꾸는 변경은 확인된 버그를 고칠 때만 하고, 판 설명에 앱마다 무엇이 바뀌는지 적습니다.
   앱은 판을 올릴 때 전·후 빌드를 `opencad-site compare-dist`로 견줍니다.
 - 태그를 올린 뒤 각 앱의 `package.json`을 새 태그로 바꾸고 `npm install`로 잠금 파일을 갱신합니다.
+- 요소 스크립트(`embed/opencad-embed.js`)가 바뀐 판이면, 판을 내는 PR에서 README·`docs/EMBED*.md`의 CDN 주소·npm 태그를 새 판으로 바꾸고
+  `integrity`는 `npm run embed:snippet`이 찍는 값으로 바꿉니다. 주소·태그가 판 하나를 가리키지 않거나 무결성 값이 그 판의 파일과 다르면
+  `test/embed-docs.test.ts`가 실패합니다. 다른 사이트는 안내를 그대로 복사해 쓰므로, 값이 어긋나면 브라우저가 스크립트를 막습니다.
 
 ## 개발
 
