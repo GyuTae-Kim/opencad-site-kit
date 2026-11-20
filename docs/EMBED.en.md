@@ -16,8 +16,8 @@ The script, this repository and the four app repositories are public under the M
 
 ```html
 <script type="module"
-  src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.2.0/embed/opencad-embed.js"
-  integrity="sha384-CJXDL5TstGA6j3akEHj32i+tZFlP/7O4j95pFlZZ/sjt4svlLy4THa7i8gapJu5u"
+  src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.0/embed/opencad-embed.js"
+  integrity="sha384-CY1O0cUbTNF8wtB63Oq+16i5fvJJ+dNm54zPnRBOU8qgSQ76Jy6TBUNbSwHbdauc"
   crossorigin="anonymous"></script>
 
 <opencad-viewer src="/files/bracket.step" lang="en" style="height: 520px"></opencad-viewer>
@@ -27,7 +27,7 @@ The script, this repository and the four app repositories are public under the M
 - Your page downloads `src` itself and hands the bytes to the app. The file must be on your own site or on a server that allows CORS.
 - **The app UI is Korean by default.** Set `lang` to `en`, `ja`, `zh-CN` or `de` for another language.
 - Size it with CSS. The default height is 480px, and the width follows the parent.
-- `@v0.2.0` pins the version. Tags never move, so the URL always serves the same bytes and the `integrity` hash keeps matching.
+- `@v0.3.0` pins the version. Tags never move, so the URL always serves the same bytes and the `integrity` hash keeps matching.
   If the file differs by a single byte, the browser refuses to run it.
   When you upgrade, change the URL and the hash together:
 
@@ -50,7 +50,7 @@ The script, this repository and the four app repositories are public under the M
 The element is a single file with no dependencies (12.6 KB, 4.8 KB gzipped). Download it and serve it from your site.
 
 ```bash
-curl -L -o opencad-embed.js https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.2.0/embed/opencad-embed.js
+curl -L -o opencad-embed.js https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.0/embed/opencad-embed.js
 ```
 
 ```html
@@ -65,7 +65,7 @@ The apps themselves still load from `https://gyutae-kim.github.io/`.
 The package isn't on the npm registry, so install it from the GitHub tag (git must be installed on the machine).
 
 ```bash
-npm install "opencad-site-kit@github:GyuTae-Kim/opencad-site-kit#v0.2.0"
+npm install "opencad-site-kit@github:GyuTae-Kim/opencad-site-kit#v0.3.0"
 ```
 
 ```js
@@ -74,7 +74,7 @@ import 'opencad-site-kit/embed';   // registers <opencad-viewer>; only this one 
 
 - No runtime dependencies and no build step on install. `jsdom` and `vite` are optional peers and aren't installed.
 - Type declarations are included, so `document.querySelector('opencad-viewer')` is typed as `OpenCadViewer` in TypeScript.
-  Event `detail` is typed too, without casts: `addEventListener('opencad-done', (event) => event.detail.id)` on the element, `document` or `window` (**in the release after v0.2.0**).
+  Event `detail` is typed too, without casts: `addEventListener('opencad-done', (event) => event.detail.id)` on the element, `document` or `window` (since 0.3.0).
 - Importing it during server-side rendering is safe. Outside a browser it doesn't register anything; the element renders in the browser.
 - Listen for events with `addEventListener('opencad-done', …)` on the element. In React and similar frameworks, get the element through a ref.
 
@@ -142,7 +142,7 @@ Without `app`, `open()` switches to whichever app handles the file's extension.
 | `base` | Where the apps live (default `https://gyutae-kim.github.io/`). Your own address if you deploy the apps yourself |
 | `sample` | Opens the app's sample instead of a file (use with `app`) |
 | `title` | Accessible name of the iframe (defaults to "OpenCAD STEP viewer" and so on) |
-| `loading` | With `lazy`, the app loads when the element comes within 200px of the viewport (right away if you call `open()`). Use it when a page has several viewers. **In the release after v0.2.0** |
+| `loading` | With `lazy`, the app loads when the element comes within 200px of the viewport (right away if you call `open()`). Use it when a page has several viewers. Since 0.3.0. |
 
 - `viewer.open(fileOrBlob, name?)` returns `Promise<void>`. It resolves when the app has finished opening the file and rejects with `Error(code)` if the app can't take it.
 - `viewer.app` is the name of the app currently shown.

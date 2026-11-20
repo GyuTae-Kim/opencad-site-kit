@@ -1,11 +1,12 @@
 # 바뀐 점
 
-판마다 무엇이 바뀌었는지 적습니다. 판 이름은 `package.json`의 `version`과 같은 태그(`v0.2.0`)이고, 앱은 그 태그로 고정해 씁니다
-(`github:GyuTae-Kim/opencad-site-kit#v0.2.0`). 판을 올리는 규칙은 [README "판 올리기"](README.md#판-올리기)에 있습니다.
+판마다 무엇이 바뀌었는지 적습니다. 판 이름은 `package.json`의 `version`과 같은 태그(`v0.3.0`)이고, 앱은 그 태그로 고정해 씁니다
+(`github:GyuTae-Kim/opencad-site-kit#v0.3.0`). 판을 올리는 규칙은 [README "판 올리기"](README.md#판-올리기)에 있습니다.
 
-## 아직 내지 않은 것
+## [0.3.0] - 2026-11-20
 
-`<opencad-viewer>` 파일(`embed/opencad-embed.js`)이 바뀌어, 다음 판을 내면 설치 안내의 CDN 주소와 무결성 값도 함께 바꿉니다.
+다른 웹페이지에 넣는 `<opencad-viewer>`를 다듬은 판입니다. 앱이 쓰는 파일은 바뀌지 않아 앱 빌드 결과는 0.2.0과 같습니다.
+요소 파일(`embed/opencad-embed.js`)이 바뀌어 CDN 주소(`@v0.3.0`)와 `integrity` 값이 바뀌었습니다. `@v0.2.0` 주소와 그 값은 그대로 쓸 수 있습니다.
 
 ### 더한 것
 
@@ -84,6 +85,7 @@
 첫 판입니다. 네 OpenCAD 앱이 저장소마다 복사해 쓰던 사이트 계층을 한 패키지로 모았습니다([#1](https://github.com/GyuTae-Kim/opencad-site-kit/pull/1)).
 다국어 페이지, 검색 정보와 사이트맵, 내용 수정일, 홈 화면 앱과 서비스 워커, 방문 통계, 성능 측정, `opencad-site` 명령이 들어 있습니다.
 
+[0.3.0]: https://github.com/GyuTae-Kim/opencad-site-kit/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/GyuTae-Kim/opencad-site-kit/compare/v0.1.6...v0.2.0
 [0.1.6]: https://github.com/GyuTae-Kim/opencad-site-kit/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/GyuTae-Kim/opencad-site-kit/compare/v0.1.4...v0.1.5

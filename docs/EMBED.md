@@ -8,7 +8,7 @@ OpenCAD의 네 앱(DWG·DXF 2D CAD, STEP·SketchUp·NC 3D 뷰어)을 블로그·
 ## 바로 쓰기
 
 ```html
-<script type="module" src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.2.0/embed/opencad-embed.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.0/embed/opencad-embed.js"></script>
 
 <opencad-viewer src="/models/bracket.step" style="height: 520px"></opencad-viewer>
 ```
@@ -16,7 +16,7 @@ OpenCAD의 네 앱(DWG·DXF 2D CAD, STEP·SketchUp·NC 3D 뷰어)을 블로그·
 - 요소가 파일 확장자를 보고 앱을 고릅니다: `.dwg`·`.dxf` → DWG/DXF 캐드, `.step`·`.stp`·`.p21`·`.stpz` → STEP 뷰어, `.skp` → SKP 뷰어,
   `.nc`·`.gcode`·`.mpr`·`.pgi`·`.h` 등 → NC 뷰어
 - 크기는 CSS로 정합니다(기본 높이 480px, 너비는 부모에 맞춤)
-- 스크립트는 한 파일(의존 없음, MIT)이라 내 사이트에 복사해 올려도 됩니다. jsDelivr 주소의 `@v0.2.0`처럼 판을 고정해 씁니다
+- 스크립트는 한 파일(의존 없음, MIT)이라 내 사이트에 복사해 올려도 됩니다. jsDelivr 주소의 `@v0.3.0`처럼 판을 고정해 씁니다
 - `integrity`(SRI)를 붙이는 법, npm으로 받는 법, iframe만 넣는 법은 [README "내 웹사이트에 OpenCAD 설치하기"](../README.md#내-웹사이트에-opencad-설치하기)에 있습니다
 
 방문자가 자기 파일을 열게 하려면 `src` 없이 `app`만 주거나, 파일 고르기를 이어 `open()`을 부릅니다.
@@ -46,7 +46,7 @@ OpenCAD의 네 앱(DWG·DXF 2D CAD, STEP·SketchUp·NC 3D 뷰어)을 블로그·
 | `base` | 앱들이 있는 곳(기본 `https://gyutae-kim.github.io/`). 앱을 직접 배포했으면 그 주소 |
 | `sample` | 파일 대신 그 앱의 예제를 엽니다(`app`과 함께) |
 | `title` | iframe의 접근성 이름(기본 "OpenCAD STEP 뷰어" 등) |
-| `loading` | `lazy`면 요소가 화면 200px 안으로 들어올 때 앱을 띄웁니다(`open()`을 부르면 바로). 한 페이지에 여럿을 넣을 때 씁니다. **v0.2.0 다음 판부터** |
+| `loading` | `lazy`면 요소가 화면 200px 안으로 들어올 때 앱을 띄웁니다(`open()`을 부르면 바로). 한 페이지에 여럿을 넣을 때 씁니다. 0.3.0부터 |
 
 - `viewer.open(fileOrBlob, name?)` → `Promise<void>`: 앱이 열기를 마치면 풀리고, 못 받으면 `Error(code)`로 거절됩니다
 - `viewer.app`: 지금 띄운 앱 이름
