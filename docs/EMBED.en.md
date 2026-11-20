@@ -18,8 +18,8 @@ Try it on the [demo page](https://gyutae-kim.github.io/opencad-site-kit/).
 
 ```html
 <script type="module"
-  src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.2/embed/opencad-embed.js"
-  integrity="sha384-C1/pM8qbTaq6huCkD80qglQMMO7xeIhOsLMPe4++k+SNOHYvJ7QVZxJWsOffqULn"
+  src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.3/embed/opencad-embed.js"
+  integrity="sha384-iBez8mFLUyLflKQtwit6NVxPjwZK20PQTLuFw1NtYVAR5Q0GPShB9E6jPCoce9pM"
   crossorigin="anonymous"></script>
 
 <opencad-viewer src="/files/bracket.step" lang="en" style="height: 520px"></opencad-viewer>
@@ -29,7 +29,7 @@ Try it on the [demo page](https://gyutae-kim.github.io/opencad-site-kit/).
 - Your page downloads `src` itself and hands the bytes to the app. The file must be on your own site or on a server that allows CORS.
 - **The app UI is Korean by default.** Set `lang` to `en`, `ja`, `zh-CN` or `de` for another language.
 - Size it with CSS. The default height is 480px, and the width follows the parent.
-- `@v0.3.2` pins the version. Tags never move, so the URL always serves the same bytes and the `integrity` hash keeps matching.
+- `@v0.3.3` pins the version. Tags never move, so the URL always serves the same bytes and the `integrity` hash keeps matching.
   If the file differs by a single byte, the browser refuses to run it.
   When you upgrade, change the URL and the hash together:
 
@@ -52,7 +52,7 @@ Try it on the [demo page](https://gyutae-kim.github.io/opencad-site-kit/).
 The element is a single file with no dependencies (12.6 KB, 4.8 KB gzipped). Download it and serve it from your site.
 
 ```bash
-curl -L -o opencad-embed.js https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.2/embed/opencad-embed.js
+curl -L -o opencad-embed.js https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.3/embed/opencad-embed.js
 ```
 
 ```html
@@ -64,11 +64,13 @@ The apps themselves still load from `https://gyutae-kim.github.io/`.
 
 ### 3. Install with npm
 
-The package isn't on the npm registry, so install it from the GitHub tag (git must be installed on the machine).
+Install it from the npm registry (since 0.3.3):
 
 ```bash
-npm install "opencad-site-kit@github:GyuTae-Kim/opencad-site-kit#v0.3.2"
+npm install opencad-site-kit
 ```
+
+Or from the GitHub tag (git must be installed on the machine): `npm install "opencad-site-kit@github:GyuTae-Kim/opencad-site-kit#v0.3.3"`
 
 ```js
 import 'opencad-site-kit/embed';   // registers <opencad-viewer>; only this one file ends up in your bundle

@@ -30,6 +30,10 @@ export function changelogSections(text) {
   }));
 }
 
+/** npm 레지스트리에 올린 첫 판(그 전 판은 GitHub 태그로만 받는다) */
+export const NPM_SINCE = '0.3.3';
+const onRegistry = (version) => version.localeCompare(NPM_SINCE, 'en', { numeric: true }) >= 0;
+
 /** 릴리스 본문. embedSri: 그 태그의 요소 스크립트 sha384(없으면 null) */
 export function releaseNotes(sections, version, embedSri) {
   const at = sections.findIndex((section) => section.version === version);
@@ -45,8 +49,8 @@ export function releaseNotes(sections, version, embedSri) {
         '## 설치',
         `다른 웹페이지에 넣기([안내](${REPO}/blob/${tag}/docs/EMBED.md) · [English](${REPO}/blob/${tag}/docs/EMBED.en.md)):`,
         ['```html', '<script type="module"', `  src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@${tag}/${EMBED}"`, `  integrity="${embedSri}"`, '  crossorigin="anonymous"></script>', '```'].join('\n'),
-        'npm(GitHub 태그):',
-        ['```bash', `npm install ${npm}`, '```'].join('\n'),
+        onRegistry(version) ? 'npm:' : 'npm(GitHub 태그):',
+        ['```bash', ...(onRegistry(version) ? [`npm install opencad-site-kit@${version}`, '# 또는 GitHub 태그'] : []), `npm install ${npm}`, '```'].join('\n'),
       ]
     : ['## 설치', ['```bash', `npm install -D ${npm}`, '```'].join('\n')];
   const compare = previous ? `**전체 변경**: ${REPO}/compare/v${previous}...${tag}` : `**전체 코드**: ${REPO}/tree/${tag}`;

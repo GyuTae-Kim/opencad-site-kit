@@ -29,8 +29,8 @@ OpenCAD 앱(STEP·SKP·NC·DWG·DXF)이 함께 쓰는 사이트 계층 도구입
 
 ```html
 <script type="module"
-  src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.2/embed/opencad-embed.js"
-  integrity="sha384-C1/pM8qbTaq6huCkD80qglQMMO7xeIhOsLMPe4++k+SNOHYvJ7QVZxJWsOffqULn"
+  src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.3/embed/opencad-embed.js"
+  integrity="sha384-iBez8mFLUyLflKQtwit6NVxPjwZK20PQTLuFw1NtYVAR5Q0GPShB9E6jPCoce9pM"
   crossorigin="anonymous"></script>
 
 <opencad-viewer src="/files/bracket.step" lang="en" style="height: 520px"></opencad-viewer>
@@ -38,7 +38,7 @@ OpenCAD 앱(STEP·SKP·NC·DWG·DXF)이 함께 쓰는 사이트 계층 도구입
 
 - 요소는 `src`의 확장자로 앱을 고릅니다: `.dwg`·`.dxf`는 DWG/DXF 캐드, `.step`·`.stp`는 STEP 뷰어, `.skp`는 SKP 뷰어, `.nc`·`.gcode` 등은 NC 뷰어입니다
 - `src` 파일은 내 페이지가 직접 받아 앱에 넘깁니다. 그래서 내 사이트에 있는 파일이거나 CORS를 허용한 주소여야 합니다
-- 주소에 `@v0.3.2`처럼 태그를 붙여 판을 고정합니다. 태그는 옮기지 않으므로 같은 주소는 늘 같은 파일이고, `integrity` 값도 그대로 맞습니다.
+- 주소에 `@v0.3.3`처럼 태그를 붙여 판을 고정합니다. 태그는 옮기지 않으므로 같은 주소는 늘 같은 파일이고, `integrity` 값도 그대로 맞습니다.
   파일이 한 바이트라도 다르면 브라우저가 실행하지 않습니다. 새 판으로 올릴 때는 주소와 `integrity`를 함께 바꿉니다:
   `curl -sL <스크립트 주소> | openssl dgst -sha384 -binary | openssl base64 -A`
 - 크기는 CSS로 정합니다(기본 높이 480px, 너비는 부모에 맞춤). 화면 언어는 `lang`(`ko`·`en`·`ja`·`zh-CN`·`de`)으로 고릅니다
@@ -66,7 +66,7 @@ OpenCAD 앱(STEP·SKP·NC·DWG·DXF)이 함께 쓰는 사이트 계층 도구입
 요소 스크립트는 의존 없는 파일 하나입니다(12.6 KB, gzip 4.8 KB). 받아서 내 사이트에 올리고 그 주소로 불러옵니다.
 
 ```bash
-curl -L -o opencad-embed.js https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.2/embed/opencad-embed.js
+curl -L -o opencad-embed.js https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.3/embed/opencad-embed.js
 ```
 
 ```html
@@ -77,11 +77,13 @@ MIT 조건대로 이 저장소의 저작권·허가 문구([LICENSE](LICENSE))�
 
 ### 3. npm으로 받기
 
-npm 레지스트리에는 올리지 않았으므로 GitHub 태그로 받습니다(설치하는 컴퓨터에 git이 있어야 합니다).
+npm 레지스트리에서 받습니다(0.3.3부터).
 
 ```bash
-npm install "opencad-site-kit@github:GyuTae-Kim/opencad-site-kit#v0.3.2"
+npm install opencad-site-kit
 ```
+
+GitHub 태그로 받을 수도 있습니다(설치하는 컴퓨터에 git이 있어야 합니다): `npm install "opencad-site-kit@github:GyuTae-Kim/opencad-site-kit#v0.3.3"`
 
 ```js
 import 'opencad-site-kit/embed';   // <opencad-viewer>를 등록한다. 번들에는 이 파일 하나만 들어간다
@@ -157,13 +159,13 @@ import 'opencad-site-kit/embed';   // <opencad-viewer>를 등록한다. 번들�
 
 ## 앱에서 쓰기
 
-npm에 올리지 않고 GitHub 의존으로 씁니다. 빌드 때만 쓰므로 `devDependencies`에 둡니다(`npm install -D "opencad-site-kit@github:GyuTae-Kim/opencad-site-kit#<태그>"`).
+OpenCAD 앱은 GitHub 태그로 고정해 씁니다(npm 레지스트리의 같은 판도 됩니다). 빌드 때만 쓰므로 `devDependencies`에 둡니다(`npm install -D "opencad-site-kit@github:GyuTae-Kim/opencad-site-kit#<태그>"`).
 아래 예는 OpenCAD 앱의 것입니다. 다른 사이트는 [다른 사이트에서 쓰기](#다른-사이트에서-쓰기)를 봅니다. 브라우저 모듈은 TypeScript 원본 그대로 내보내므로 Vite 같은 번들러와 `moduleResolution: "bundler"`가 필요합니다.
 빌드 도구(`.mjs`)는 Node 22와 Vite 7에서 돌고, 형 선언(`.d.mts`)이 함께 있습니다. `jsdom`·`vite`는 앱이 이미 가진 것을 씁니다.
 
 ```json
 "devDependencies": {
-  "opencad-site-kit": "github:GyuTae-Kim/opencad-site-kit#v0.3.2"
+  "opencad-site-kit": "github:GyuTae-Kim/opencad-site-kit#v0.3.3"
 },
 "scripts": {
   "build": "tsc --noEmit && vite build && npm run check:seo && npm run check:i18n",
@@ -326,6 +328,7 @@ initAnalytics({
 - 태그를 올린 뒤 같은 이름의 GitHub 릴리스를 냅니다. 본문은 CHANGELOG의 그 판 절에서 `npm run -s release:notes -- vX.Y.Z`가 만듭니다
   (상대 링크는 태그 주소로, 요소 스크립트가 있는 판은 `integrity`를 붙인 `<script>` 줄, 끝에 앞 판과의 비교 링크).
   `gh release create vX.Y.Z --verify-tag --title "$(npm run -s release:notes -- vX.Y.Z --title)" --notes-file <본문>` — 제목은 태그 주석의 첫 줄입니다.
+- 같은 판을 npm에도 올립니다(0.3.3부터). 태그를 받은 깨끗한 작업 트리에서 `npm publish`를 돌리고, 올린 판은 고치거나 다시 쓰지 않습니다.
 - 태그를 올린 뒤 각 앱의 `package.json`을 새 태그로 바꾸고 `npm install`로 잠금 파일을 갱신합니다.
 - 요소 스크립트(`embed/opencad-embed.js`)가 바뀐 판이면, 판을 내는 PR에서 README·`docs/EMBED*.md`의 CDN 주소·npm 태그를 새 판으로 바꾸고
   `integrity`는 `npm run embed:snippet`이 찍는 값으로 바꿉니다. 주소·태그가 판 하나를 가리키지 않거나 무결성 값이 그 판의 파일과 다르면

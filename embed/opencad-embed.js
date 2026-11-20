@@ -1,7 +1,7 @@
 /**
  * <opencad-viewer> — 내 웹페이지에 OpenCAD 앱(DWG·DXF 2D CAD, STEP·SketchUp·NC 3D 뷰어)을 넣는 요소. 의존 없는 한 파일, MIT.
  *
- *   <script type="module" src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.2/embed/opencad-embed.js"></script>
+ *   <script type="module" src="https://cdn.jsdelivr.net/gh/GyuTae-Kim/opencad-site-kit@v0.3.3/embed/opencad-embed.js"></script>
  *   <opencad-viewer src="/models/bracket.step" style="height: 480px"></opencad-viewer>
  *
  * 속성
