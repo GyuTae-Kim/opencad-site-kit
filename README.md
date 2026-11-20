@@ -319,6 +319,9 @@ initAnalytics({
   앱이 설정이나 가져오는 경로를 바꿔야 하는 변경도 0.x 동안은 가운데 자리를 올리고, README에 옮기는 법을 적습니다.
 - 같은 입력에서 앱 출력(HTML·앱 정보·사이트맵·sw.js·번역)을 바꾸는 변경은 확인된 버그를 고칠 때만 하고, 판 설명에 앱마다 무엇이 바뀌는지 적습니다.
   앱은 판을 올릴 때 전·후 빌드를 `opencad-site compare-dist`로 견줍니다.
+- 태그를 올린 뒤 같은 이름의 GitHub 릴리스를 냅니다. 본문은 CHANGELOG의 그 판 절에서 `npm run -s release:notes -- vX.Y.Z`가 만듭니다
+  (상대 링크는 태그 주소로, 요소 스크립트가 있는 판은 `integrity`를 붙인 `<script>` 줄, 끝에 앞 판과의 비교 링크).
+  `gh release create vX.Y.Z --verify-tag --title "$(npm run -s release:notes -- vX.Y.Z --title)" --notes-file <본문>` — 제목은 태그 주석의 첫 줄입니다.
 - 태그를 올린 뒤 각 앱의 `package.json`을 새 태그로 바꾸고 `npm install`로 잠금 파일을 갱신합니다.
 - 요소 스크립트(`embed/opencad-embed.js`)가 바뀐 판이면, 판을 내는 PR에서 README·`docs/EMBED*.md`의 CDN 주소·npm 태그를 새 판으로 바꾸고
   `integrity`는 `npm run embed:snippet`이 찍는 값으로 바꿉니다. 주소·태그가 판 하나를 가리키지 않거나 무결성 값이 그 판의 파일과 다르면
@@ -350,6 +353,7 @@ npm test            # .runtime/variants가 있으면 원본과 견주는 시험�
 
 0.2.0(설정 분리·임베드) 적용 PR: opencad-step #114 · opencad-skp #115 · opencad-nc #106 · opencad-dwgdxf #176.
 0.3.0(임베드 요소 lazy·이벤트 형) 적용 PR: opencad-step #120 · opencad-skp #122 · opencad-nc #112 · opencad-dwgdxf #181. 앱이 쓰는 파일은 바뀌지 않은 판이라 의존·잠금 파일만 바꿨습니다.
+0.3.1(React 19·Vue에서 요소 `app` 고침) 적용 PR: opencad-step #121 · opencad-skp #123 · opencad-nc #113 · opencad-dwgdxf #182. 0.3.0과 같이 의존·잠금 파일만 바꿨습니다.
 
 단계마다의 빌드 결과 비교와 바뀐 동작은 [docs/ADOPTION.md](docs/ADOPTION.md)의 "적용 기록"에 있습니다. 앱이 새 판으로 올릴 때는 이 표도 고칩니다.
 
@@ -371,6 +375,8 @@ opencad-nc `eb2bd8c`, opencad-dwgdxf `eea2fcf`). 갈래마다 고친 쪽을 따�
 - 판마다 바뀐 점: [CHANGELOG.md](CHANGELOG.md)
 - 버그 신고·PR 안내: [CONTRIBUTING.md](CONTRIBUTING.md)(한국어·영어)
 - 보안 문제는 공개 이슈 대신 [SECURITY.md](SECURITY.md)의 비공개 신고로 알려 주십시오
+- 참여하는 모든 분은 [행동 강령](CODE_OF_CONDUCT.md)을 따릅니다
+- 판별 릴리스 노트: [GitHub 릴리스](https://github.com/GyuTae-Kim/opencad-site-kit/releases)
 
 ## 라이선스
 

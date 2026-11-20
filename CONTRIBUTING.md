@@ -3,8 +3,10 @@
 > **English:** Issues and pull requests are welcome in Korean or English.
 > Run `npm ci`, `npm run typecheck` and `npm test` before opening a pull request.
 > Bug reports about `<opencad-viewer>` are easiest to act on with the page's HTML, the browser and any console errors.
+> Everyone taking part follows the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 버그 신고, 문서 고침, 임베드 개선을 반깁니다. 한국어나 영어로 쓰시면 됩니다.
+참여하는 모든 분은 [행동 강령](CODE_OF_CONDUCT.md)을 따릅니다.
 동작을 크게 바꾸거나 새 설정을 더하는 일이면 먼저 이슈로 의논해 주십시오.
 
 ## 개발 환경
