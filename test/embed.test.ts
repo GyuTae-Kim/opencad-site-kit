@@ -317,6 +317,41 @@ describe('host side: <opencad-viewer>', () => {
     expect(element.app).toBe('nc'); // 남은 name(b.nc)의 확장자로 고른다
   });
 
+  // 인라인 스타일을 막은 CSP(style-src 'self')에서는 <style>이 막혀 요소가 한 줄 높이로 줄어든다 — 만든 스타일시트는 CSP에 걸리지 않는다
+  it('styles itself with a shared constructed stylesheet where the browser has one, and a <style> elsewhere', () => {
+    const fallback = document.createElement('opencad-viewer') as OpenCadViewer;
+    expect(fallback.shadowRoot!.querySelector('style')!.textContent).toContain(':host{display:block');
+
+    const sheets: string[] = [];
+    vi.stubGlobal('CSSStyleSheet', class {
+      replaceSync(text: string) {
+        sheets.push(text);
+      }
+    });
+    const adopted = new WeakMap<ShadowRoot, unknown[]>();
+    Object.defineProperty(ShadowRoot.prototype, 'adoptedStyleSheets', {
+      configurable: true,
+      get(this: ShadowRoot) {
+        return adopted.get(this) ?? [];
+      },
+      set(this: ShadowRoot, value: unknown[]) {
+        adopted.set(this, value);
+      },
+    });
+    try {
+      const first = document.createElement('opencad-viewer') as OpenCadViewer;
+      const second = document.createElement('opencad-viewer') as OpenCadViewer;
+      expect(first.shadowRoot!.querySelector('style')).toBeNull();
+      expect(sheets).toHaveLength(1);
+      expect(sheets[0]).toContain(':host{display:block');
+      const [sheet] = first.shadowRoot!.adoptedStyleSheets;
+      expect(sheet).toBeDefined();
+      expect(second.shadowRoot!.adoptedStyleSheets).toEqual([sheet]);
+    } finally {
+      delete (ShadowRoot.prototype as { adoptedStyleSheets?: unknown }).adoptedStyleSheets;
+    }
+  });
+
   it('loads at once when the browser has no IntersectionObserver', () => {
     vi.stubGlobal('IntersectionObserver', undefined);
     const { iframe } = mount({ app: 'skp', loading: 'lazy' });
