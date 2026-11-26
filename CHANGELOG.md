@@ -1,9 +1,12 @@
 # 바뀐 점
 
-판마다 무엇이 바뀌었는지 적습니다. 같은 내용을 [GitHub 릴리스](https://github.com/GyuTae-Kim/opencad-site-kit/releases)에도 올립니다. 판 이름은 `package.json`의 `version`과 같은 태그(`v0.3.3`)이고, 앱은 그 태그로 고정해 씁니다
-(`github:GyuTae-Kim/opencad-site-kit#v0.3.3`). 판을 올리는 규칙은 [README "판 올리기"](README.md#판-올리기)에 있습니다.
+판마다 무엇이 바뀌었는지 적습니다. 같은 내용을 [GitHub 릴리스](https://github.com/GyuTae-Kim/opencad-site-kit/releases)에도 올립니다. 판 이름은 `package.json`의 `version`과 같은 태그(`v0.4.0`)이고, 앱은 그 태그로 고정해 씁니다
+(`github:GyuTae-Kim/opencad-site-kit#v0.4.0`). 판을 올리는 규칙은 [README "판 올리기"](README.md#판-올리기)에 있습니다.
 
-## 아직 내지 않은 것
+## [0.4.0] - 2026-11-26
+
+방문 통계에 선택 설정 `internalKey`와 내보내기 `internalTraffic`을 더한 판입니다([#26](https://github.com/GyuTae-Kim/opencad-site-kit/pull/26)). 앱 쪽에서 바뀌는 것은 방문 통계 코드뿐입니다.
+요소 스크립트(`<opencad-viewer>`)는 0.3.3과 같아서 설치 안내의 CDN 주소(`@v0.3.3`)와 `integrity` 값은 그대로 둡니다.
 
 ### 더한 것
 
@@ -136,6 +139,7 @@ npm 레지스트리에 처음 올리는 판입니다(`npm install opencad-site-k
 첫 판입니다. 네 OpenCAD 앱이 저장소마다 복사해 쓰던 사이트 계층을 한 패키지로 모았습니다([#1](https://github.com/GyuTae-Kim/opencad-site-kit/pull/1)).
 다국어 페이지, 검색 정보와 사이트맵, 내용 수정일, 홈 화면 앱과 서비스 워커, 방문 통계, 성능 측정, `opencad-site` 명령이 들어 있습니다.
 
+[0.4.0]: https://github.com/GyuTae-Kim/opencad-site-kit/compare/v0.3.3...v0.4.0
 [0.3.3]: https://github.com/GyuTae-Kim/opencad-site-kit/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/GyuTae-Kim/opencad-site-kit/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/GyuTae-Kim/opencad-site-kit/compare/v0.3.0...v0.3.1

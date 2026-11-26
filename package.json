@@ -1,6 +1,6 @@
 {
   "name": "opencad-site-kit",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "description": "<opencad-viewer>: embed DWG, DXF, STEP, SKP and NC viewers in any web page with one script tag, plus the shared site tools of the OpenCAD apps (i18n, SEO, PWA, analytics)",
   "license": "MIT",
   "publishConfig": {

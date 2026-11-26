@@ -12,7 +12,7 @@
 
 ## 지원하는 판
 
-가장 최근 태그만 고칩니다(지금은 `v0.3.3`). 고친 판을 내면 [CHANGELOG.md](CHANGELOG.md)와 [GitHub 릴리스](https://github.com/GyuTae-Kim/opencad-site-kit/releases)에 적습니다.
+가장 최근 태그만 고칩니다(지금은 `v0.4.0`). 고친 판을 내면 [CHANGELOG.md](CHANGELOG.md)와 [GitHub 릴리스](https://github.com/GyuTae-Kim/opencad-site-kit/releases)에 적습니다.
 
 ## 특히 살펴 주실 곳
 
