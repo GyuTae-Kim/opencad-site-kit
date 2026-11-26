@@ -5,6 +5,10 @@
 
 ## 아직 내지 않은 것
 
+### 더한 것
+
+- 방문 통계: 소유자·검증 방문을 `traffic_type=internal`로 표시합니다(`#ga-internal=on|off`는 브라우저, `?utm_source=qa`는 탭). GA4 내부 트래픽 데이터 필터로 통계에서 뺄 수 있습니다. 설정 `internalKey`(기본 `analytics-internal.v1`)를 더했고, `OPENCAD_ANALYTICS`는 포트폴리오와 같은 `opencad.analytics-internal.v1`을 씁니다.
+
 ### 고친 것
 
 - `package.json`의 `bin` 경로를 `bin/opencad-site.mjs`로 적었습니다. 앞의 `./` 때문에 `npm publish`가 「npm auto-corrected some errors」 경고를 냈습니다(설치된 `opencad-site` 명령은 0.3.3에서도 그대로 동작).

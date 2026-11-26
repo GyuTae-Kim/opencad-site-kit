@@ -38,6 +38,12 @@ export interface AnalyticsConfig {
   apps: Readonly<Record<string, AnalyticsPage>>;
   /** localStorage key of the visitor's choice. */
   consentKey?: string;
+  /**
+   * Storage key that tags owner and QA visits with traffic_type=internal, for a GA4
+   * "Internal Traffic" data filter. `#ga-internal=on|off` marks or clears this
+   * browser (localStorage); a `utm_source=qa` link marks only the tab (sessionStorage).
+   */
+  internalKey?: string;
   /** Extensions recorded as file_format (others become "other"). */
   formats?: readonly string[];
   /** target_tool for a clicked source repository link (source_open), or null. */
@@ -56,7 +62,7 @@ const DEFAULT_TEXT: ConsentText = {
   deny: '수집 안 함',
 };
 type AnalyticsWindow = Window & { dataLayer?: unknown[]; gtag?: (...args: unknown[]) => void };
-interface Site { host: string; apps: Readonly<Record<string, AnalyticsPage>>; consentKey: string; formats: ReadonlySet<string>; sourceTool?: (url: URL) => string | null; text: ConsentText }
+interface Site { host: string; apps: Readonly<Record<string, AnalyticsPage>>; consentKey: string; internalKey: string; formats: ReadonlySet<string>; sourceTool?: (url: URL) => string | null; text: ConsentText }
 let site: Site | undefined;
 const DEFAULT_FORMAT_SET: ReadonlySet<string> = new Set(DEFAULT_FORMATS);
 let active: { id: string; tool: AnalyticsTool } | undefined;
@@ -70,6 +76,7 @@ let pageGroup: ContentGroup = '';
 let pageReferrer = '';
 let lastPage = '';
 let pageReady = false;
+let internal = false;
 
 /** Only published app entry paths may become page identities. */
 function publicAppPath(tool: AnalyticsTool, pathname: string): string {
@@ -77,6 +84,22 @@ function publicAppPath(tool: AnalyticsTool, pathname: string): string {
   if (!pathname.startsWith(root)) return root;
   const language = pathname.slice(root.length).match(new RegExp(`^(${LANGUAGE})(?:\\/(?:index\\.html)?)?$`))?.[1];
   return language ? `${root}${language}/` : root;
+}
+
+/**
+ * Whether this visit is the owner's or a QA run (see AnalyticsConfig.internalKey).
+ * Storage failures count as an ordinary visit and never block the page.
+ */
+export function internalTraffic(search: string, hash: string, key: string, store: { local?: Storage; session?: Storage } = {}): boolean {
+  try {
+    const local = store.local ?? localStorage;
+    const session = store.session ?? sessionStorage;
+    const toggle = /^#(?:.*&)?ga-internal=(on|off)(?:&|$)/.exec(hash)?.[1];
+    if (toggle === 'on') local.setItem(key, '1');
+    if (toggle === 'off') { local.removeItem(key); session.removeItem(key); }
+    if (new URLSearchParams(search).get('utm_source')?.toLowerCase() === 'qa') session.setItem(key, '1');
+    return local.getItem(key) === '1' || session.getItem(key) === '1';
+  } catch { return false; }
 }
 
 /** Keep campaign slugs, excluding user-supplied file/URL parameters and fragments. */
@@ -98,7 +121,7 @@ function fields(): Record<string, string> {
   const root = site!.apps[active!.tool]!.path;
   const relative = pagePath.startsWith(root) ? pagePath.slice(root.length) : pagePath.replace(/^\//, '');
   const pageLanguage = relative.match(new RegExp(`^(${LANGUAGE})(?:\\/|$)`))?.[1] ?? 'ko';
-  return { tool: active!.tool, page_title: pageTitle, content_group: pageGroup, page_language: pageLanguage, page_location: `https://${site!.host}${pagePath}${consent === 'granted' ? campaignQuery(location.search) : ''}`, page_referrer: consent === 'granted' ? pageReferrer : '' };
+  return { tool: active!.tool, page_title: pageTitle, content_group: pageGroup, page_language: pageLanguage, page_location: `https://${site!.host}${pagePath}${consent === 'granted' ? campaignQuery(location.search) : ''}`, page_referrer: consent === 'granted' ? pageReferrer : '', ...(internal ? { traffic_type: 'internal' } : {}) };
 }
 
 function send(name: string, params: Record<string, string | number> = {}): void {
@@ -213,7 +236,7 @@ function configured(config: AnalyticsConfig): Site {
   const apps = config.apps ?? {};
   for (const page of Object.values(apps)) if (typeof page?.path !== 'string' || !/^\/(?:.*\/)?$/.test(page.path) || typeof page.title !== 'string') throw new Error('initAnalytics: each app needs a path ending in "/" and a title.');
   return {
-    host: config.host, apps, consentKey: config.consentKey ?? 'analytics-consent.v1',
+    host: config.host, apps, consentKey: config.consentKey ?? 'analytics-consent.v1', internalKey: config.internalKey ?? 'analytics-internal.v1',
     formats: new Set((config.formats ?? DEFAULT_FORMATS).map((format) => format.toLowerCase())), sourceTool: config.sourceTool,
     text: { ...DEFAULT_TEXT, ...config.text },
   };
@@ -229,6 +252,7 @@ function initialize(config: AnalyticsConfig, tool: AnalyticsTool): void {
   if (nav.globalPrivacyControl || nav.doNotTrack === '1') return;
   site = settings;
   active = { id, tool };
+  internal = internalTraffic(location.search, location.hash, settings.internalKey);
   pagePath = publicAppPath(tool, location.pathname); pageTitle = page.title;
   pageGroup = page.group ?? (page.site ? 'site' : 'app');
   pageReferrer = referrer();
