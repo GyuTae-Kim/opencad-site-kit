@@ -27,7 +27,7 @@ body:
     attributes:
       label: 판 (Version)
       description: 스크립트 주소나 package.json의 태그 (tag in the script URL or package.json)
-      placeholder: v0.3.3
+      placeholder: v0.4.0
     validations:
       required: true
   - type: textarea
