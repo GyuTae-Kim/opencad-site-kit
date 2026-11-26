@@ -363,3 +363,44 @@ describe('embedded in another page', () => {
     expect(document.querySelector('#opencad-analytics-choice, #opencad-ga4')).toBeNull();
   });
 });
+
+describe('owner and QA visits', () => {
+  const tagged = (): boolean[] => events().map((entry) => (entry[2] as Record<string, string>)['traffic_type'] === 'internal');
+  beforeEach(() => { sessionStorage.clear(); localStorage.setItem('opencad.analytics-consent.v1', 'granted'); });
+
+  it('sends ordinary visits without an internal tag', async () => {
+    const ga = await import('../analytics/analytics');
+    ga.initAnalytics(TEST_SITE, 'skp');
+    ga.beginOpen('local', 'skp').success();
+    expect(events().length).toBeGreaterThan(1);
+    expect(tagged().some(Boolean)).toBe(false);
+  });
+
+  it('tags a QA link visit and its CAD events for the current tab only', async () => {
+    vi.stubGlobal('location', new URL('https://gyutae-kim.github.io/opencad-skp/?utm_source=qa&utm_medium=verification'));
+    const ga = await import('../analytics/analytics');
+    ga.initAnalytics(TEST_SITE, 'skp');
+    ga.beginOpen('sample', 'skp').success();
+    expect(tagged()).toEqual([true, true, true]);
+    expect(commands().find((entry) => entry[0] === 'set')![1]).toMatchObject({ traffic_type: 'internal' });
+    expect(sessionStorage.getItem('opencad.analytics-internal.v1')).toBe('1');
+    expect(localStorage.getItem('opencad.analytics-internal.v1')).toBeNull();
+  });
+
+  it('lets the owner mark and clear this browser, shared with the portfolio key', async () => {
+    vi.stubGlobal('location', new URL('https://gyutae-kim.github.io/opencad-nc/#ga-internal=on'));
+    const ga = await import('../analytics/analytics');
+    ga.initAnalytics(TEST_SITE, 'nc');
+    expect(tagged()).toEqual([true]);
+    expect(localStorage.getItem('opencad.analytics-internal.v1')).toBe('1');
+    expect(ga.internalTraffic('', '#x=1&ga-internal=off', 'opencad.analytics-internal.v1')).toBe(false);
+    expect(localStorage.getItem('opencad.analytics-internal.v1')).toBeNull();
+  });
+
+  it('treats unavailable storage as an ordinary visit', async () => {
+    const ga = await import('../analytics/analytics');
+    const blocked = { getItem: () => { throw new Error('blocked'); } } as unknown as Storage;
+    expect(ga.internalTraffic('?utm_source=qa', '#ga-internal=on', 'k', { local: blocked, session: blocked })).toBe(false);
+    expect(ga.internalTraffic('?utm_source=newsletter', '#ga-internal=maybe', 'k')).toBe(false);
+  });
+});

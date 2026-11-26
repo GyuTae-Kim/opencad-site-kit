@@ -7,6 +7,7 @@ export const OPENCAD_ANALYTICS: {
   measurementId: string;
   host: string;
   consentKey: string;
+  internalKey: string;
   apps: Record<OpenCadTool, { path: string; title: string; group: string; site?: boolean }>;
   sourceTool(url: URL): string | null;
 };

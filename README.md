@@ -274,6 +274,7 @@ initAnalytics({
   measurementId: 'G-XXXXXXXXXX',
   host: 'me.example',
   consentKey: 'me.analytics-consent.v1',
+  internalKey: 'me.analytics-internal.v1',   // 내 방문·QA 표시(#ga-internal=on|off, ?utm_source=qa) → traffic_type=internal
   apps: { cad: { path: '/cad/', title: 'My Site | CAD 뷰어' } },   // GA에는 이 공개 경로·제목만 남는다(파일 이름·문서 제목은 보내지 않음)
   text: { message: '…', allow: '허용', limited: '기본 방문만', deny: '수집 안 함' },  // 동의 상자 글(기본 한국어)
 }, 'cad');
@@ -285,7 +286,7 @@ initAnalytics({
 | `routes.aliases`(옛 뿌리 → 지금 뿌리) | 옛 주소 링크 | 없음 |
 | `routes.site`(`root`, `sections`) | 언어를 앞머리로 두는 사이트 쪽 | 없음 |
 | `untranslated` | `sourceMessage`가 거꾸로 찾지 않을 이름 | 없음 |
-| `AnalyticsConfig`(`measurementId`·`host`·`apps` 필수, `consentKey`·`formats`·`sourceTool`·`text`) | `initAnalytics` | 통계를 켜지 않음 |
+| `AnalyticsConfig`(`measurementId`·`host`·`apps` 필수, `consentKey`·`internalKey`·`formats`·`sourceTool`·`text`) | `initAnalytics` | 통계를 켜지 않음 |
 
 언어는 아직 한국어·영어·일본어·중국어(간체)·독일어 다섯 가지로 정해져 있습니다(사전 열쇠는 한국어 원문).
 
@@ -301,6 +302,8 @@ initAnalytics({
 네 앱을 옮기며 `opencad-site compare-dist`로 견주니 HTML·사이트맵·sw.js는 자산 이름·날짜·판 이름을 맞추면 0.1.6과 같고 앱 정보는 바이트까지 같았습니다.
 언어 주소는 0.1.x 규칙과 520가지 주소·언어 조합으로 견줬습니다(`test/i18n-core.test.ts`). 바뀌는 동작은 iframe 안에서 통계·서비스 워커가 꺼지는 것뿐입니다.
 첫 화면 스크립트는 1~2 kB(gzip) 늘고 스크립트가 바뀌므로 내용 수정일은 올립니다.
+
+소유자·검증 방문은 `traffic_type=internal`로 표시해 GA4의 내부 트래픽 데이터 필터로 뺄 수 있습니다. 공개 페이지에 `#ga-internal=on`을 붙여 한 번 열면 그 브라우저(localStorage)를, `?utm_source=qa` 링크는 그 탭(sessionStorage)만 표시합니다. `#ga-internal=off`로 지웁니다. 열쇠는 `internalKey`(기본 `analytics-internal.v1`, OpenCAD는 포트폴리오와 같은 `opencad.analytics-internal.v1`)입니다. 저장소를 쓸 수 없으면 일반 방문으로 봅니다.
 
 방문 통계의 `page_location`은 `/opencad-step/de/`처럼 앱의 실제 언어별 정식 주소를 보존하고, `page_language`는 `ko`·`en`·`ja`·`zh-CN`·`de` 중 하나로 기록합니다. 페이지 조회와 파일 열기·내보내기 이벤트에 같은 언어 문맥을 사용합니다. 기존 앱이 URL 갱신 뒤 보내는 `languagechange` 이벤트도 캡처해 언어를 전환할 때 새 조회를 한 번 기록합니다. 알려진 언어 진입 주소만 허용하며 파일명·임의 하위 경로·파일 URL·fragment를 보내지 않습니다. 허용된 캠페인 값은 기존처럼 분석 동의 시에만 전송합니다. 이전 판에서 기본 주소에 합쳐진 GA 이력은 소급 복원할 수 없습니다.
 

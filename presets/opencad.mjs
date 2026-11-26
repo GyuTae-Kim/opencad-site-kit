@@ -28,6 +28,8 @@ export const OPENCAD_ANALYTICS = {
   measurementId: 'G-51B8MJ5C4C',
   host: OPENCAD_HOST,
   consentKey: 'opencad.analytics-consent.v1',
+  /** 소유자·QA 방문 표시(#ga-internal=on|off, utm_source=qa). 포트폴리오(GyuTae-Kim.github.io)와 같은 키 */
+  internalKey: 'opencad.analytics-internal.v1',
   apps: {
     portfolio: { path: '/', title: '포트폴리오 | 홈', group: '포트폴리오', site: true },
     dwgdxf: { path: '/opencad-dwgdxf/', title: 'OpenCAD | DWG/DXF 캐드', group: 'OpenCAD 앱' },
